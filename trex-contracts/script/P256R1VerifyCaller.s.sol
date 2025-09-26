@@ -2,17 +2,17 @@
 pragma solidity ^0.8.13;
 
 import {Script, console} from "forge-std/Script.sol";
-import {Counter} from "../src/Counter.sol";
+import {P256R1VerifyCaller} from "../src/P256R1VerifyCaller.sol";
 
-contract CounterScript is Script {
-    Counter public counter;
+contract P256R1VerifyCallerScript is Script {
+    P256R1VerifyCaller public p256r1VerifyCaller;
 
     function setUp() public {}
 
     function run() public {
         vm.startBroadcast();
 
-        counter = new Counter();
+        p256r1VerifyCaller = new P256R1VerifyCaller();
 
         vm.stopBroadcast();
     }
