@@ -7,7 +7,7 @@ import { citreaTestnet } from 'wagmi/chains'
 
 const config = getDefaultConfig({
   appName: 'Lightning Client trex',
-  projectId: 'c572c6f0-c333-49ce-94ac-536d627b4d01',
+  projectId: process.env.NEXT_PUBLIC_PROJECT_ID!,
   chains: [citreaTestnet],
   ssr: false,
 })
