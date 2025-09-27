@@ -15,11 +15,13 @@ contract TrexToken {
     mapping(address => mapping(address => uint256)) public allowance;
 
     address public owner;
-    address public minter; // DeFi contract that can mint tokens
+    mapping(address => bool) public minters; // Multiple DeFi contracts that can mint tokens
 
     event Transfer(address indexed from, address indexed to, uint256 value);
     event Approval(address indexed owner, address indexed spender, uint256 value);
     event Mint(address indexed to, uint256 value);
+    event MinterAdded(address indexed minter);
+    event MinterRemoved(address indexed minter);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner can call this function");
@@ -27,7 +29,7 @@ contract TrexToken {
     }
 
     modifier onlyMinter() {
-        require(msg.sender == minter, "Only minter can call this function");
+        require(minters[msg.sender], "Only authorized minters can call this function");
         _;
     }
 
@@ -37,12 +39,33 @@ contract TrexToken {
     }
 
     /**
-     * @dev Set the minter address (DeFi contract)
+     * @dev Add a minter address (DeFi contract)
      * @param _minter Address of the contract that can mint tokens
      */
-    function setMinter(address _minter) external onlyOwner {
+    function addMinter(address _minter) external onlyOwner {
         require(_minter != address(0), "Invalid minter address");
-        minter = _minter;
+        require(!minters[_minter], "Address is already a minter");
+        minters[_minter] = true;
+        emit MinterAdded(_minter);
+    }
+
+    /**
+     * @dev Remove a minter address (DeFi contract)
+     * @param _minter Address of the contract to remove from minters
+     */
+    function removeMinter(address _minter) external onlyOwner {
+        require(minters[_minter], "Address is not a minter");
+        minters[_minter] = false;
+        emit MinterRemoved(_minter);
+    }
+
+    /**
+     * @dev Check if an address is a minter
+     * @param _minter Address to check
+     * @return True if the address is a minter
+     */
+    function isMinter(address _minter) external view returns (bool) {
+        return minters[_minter];
     }
 
     /**

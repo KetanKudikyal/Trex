@@ -280,17 +280,23 @@ export class UIManager {
 
     const blockHeightEl = document.getElementById("block-height");
     if (blockHeightEl) {
-      blockHeightEl.textContent = status.blockHeight.toLocaleString();
+      blockHeightEl.textContent = status.blockHeight
+        ? status.blockHeight.toLocaleString()
+        : "N/A";
     }
 
     const walletBalanceEl = document.getElementById("wallet-balance");
     if (walletBalanceEl) {
-      walletBalanceEl.textContent = this.formatBalance(status.walletBalance);
+      walletBalanceEl.textContent = status.walletBalance
+        ? this.formatBalance(status.walletBalance)
+        : "N/A";
     }
 
     const walletAddressEl = document.getElementById("wallet-address");
     if (walletAddressEl) {
-      walletAddressEl.textContent = this.formatAddress(status.walletAddress);
+      walletAddressEl.textContent = status.walletAddress
+        ? this.formatAddress(status.walletAddress)
+        : "N/A";
     }
   }
 

@@ -112,6 +112,22 @@ forge test --gas-report
 
 The deployment script deploys **both versions** of the contracts:
 
+### Citrea Testnet (Live)
+
+**✅ Successfully deployed on Citrea Testnet (Chain ID: 5115)**
+
+```bash
+./deploy.sh testnet
+```
+
+**Deployed Contract Addresses (All Verified ✅):**
+
+- **TrexToken**: [`0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E`](https://explorer.testnet.citrea.xyz/address/0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E) ✅ (Sourcify + Blockscout)
+- **LightningOracle**: [`0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E`](https://explorer.testnet.citrea.xyz/address/0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E) ✅ (Sourcify + Blockscout)
+- **DeFiContract**: [`0x9d24c52916A14afc31D86B5Aa046b252383ee444`](https://explorer.testnet.citrea.xyz/address/0x9d24c52916A14afc31D86B5Aa046b252383ee444) ✅ (Sourcify + Blockscout)
+- **LightningOraclePrivate**: [`0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a`](https://explorer.testnet.citrea.xyz/address/0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a) ✅ (Sourcify + Blockscout)
+- **DeFiContractPrivate**: [`0x90e97EF730B28B14b3F5f9214f47312796b6c10e`](https://explorer.testnet.citrea.xyz/address/0x90e97EF730B28B14b3F5f9214f47312796b6c10e) ✅ (Sourcify + Blockscout)
+
 ### Local Development (Anvil)
 
 1. Start a local Anvil node:

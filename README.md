@@ -1,6 +1,6 @@
 # Trex Protocol
 
-**Mining Lightning Liquidity for Citrea Node Hubs**
+**Mining Lightning Liquidity for ZKRollup EVM (Citrea) Node Hubs**
 
 Trex is a revolutionary protocol that enables secure, private, and gas-efficient cross-chain liquidity mining between the Lightning Network and Citrea EVM ZkRollups. The protocol incentivizes users to provide Lightning Network liquidity to Citrea node hubs, creating a symbiotic relationship between Lightning routing and DeFi rewards.
 
@@ -184,6 +184,35 @@ const result = await oraclePrivate.completePrivateVerificationFlow({
 - **Lightning PTLC integration**: Support for Point Time-Locked Contracts
 - **Advanced incentive mechanisms**: Dynamic reward structures
 - **Cross-chain liquidity pools**: Multi-network liquidity mining
+
+## 🚀 Deployment
+
+### Citrea Testnet (Live)
+
+**✅ Deployed and Verified on Citrea Testnet (Chain ID: 5115):**
+
+**Core Contracts:**
+
+- **TrexToken**: [`0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E`](https://explorer.testnet.citrea.xyz/address/0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E) ✅ Verified (Sourcify + Blockscout)
+- **LightningOraclePrivate**: [`0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a`](https://explorer.testnet.citrea.xyz/address/0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a) ✅ Verified (Sourcify + Blockscout)
+- **DeFiContractPrivate**: [`0x90e97EF730B28B14b3F5f9214f47312796b6c10e`](https://explorer.testnet.citrea.xyz/address/0x90e97EF730B28B14b3F5f9214f47312796b6c10e) ✅ Verified (Sourcify + Blockscout)
+
+**Legacy Contracts:**
+
+- **LightningOracle**: [`0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E`](https://explorer.testnet.citrea.xyz/address/0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E) ✅ Verified (Sourcify + Blockscout)
+- **DeFiContract**: [`0x9d24c52916A14afc31D86B5Aa046b252383ee444`](https://explorer.testnet.citrea.xyz/address/0x9d24c52916A14afc31D86B5Aa046b252383ee444) ✅ Verified (Sourcify + Blockscout)
+
+**Network Details:**
+
+- **RPC URL**: `https://rpc.testnet.citrea.xyz`
+- **Explorer**: `https://explorer.testnet.citrea.xyz`
+
+### Local Development
+
+```bash
+cd trex-contracts
+forge script script/DeployTrexContracts.s.sol --rpc-url anvil --broadcast
+```
 
 ## 📚 Documentation
 

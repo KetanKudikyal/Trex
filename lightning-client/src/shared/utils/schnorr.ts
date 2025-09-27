@@ -54,6 +54,28 @@ export class SchnorrUtils {
   }
 
   /**
+   * Sign a message hash directly with a private key using Schnorr signature
+   * This is useful when you already have a hash and want to sign it directly
+   */
+  static signMessageHash(
+    messageHash: Uint8Array,
+    privateKey: Uint8Array
+  ): SchnorrSignature {
+    // Use deterministic signing for better compatibility with Citrea precompile
+    const signature = sign(messageHash, privateKey, { extraEntropy: false });
+
+    // Convert signature r and s to hex strings with proper padding
+    const rHex = signature.r.toString(16).padStart(64, "0");
+    const sHex = signature.s.toString(16).padStart(64, "0");
+
+    return {
+      r: rHex,
+      s: sHex,
+      message: "", // No original message since we signed a hash directly
+    };
+  }
+
+  /**
    * Verify a Schnorr signature
    */
   static verifySignature(

@@ -64,12 +64,16 @@ contract DeployTrexContracts is Script {
         oraclePrivate.setDeFiContract(address(defiContractPrivate));
         console.log("Private Oracle DeFi contract address set to:", address(defiContractPrivate));
 
-        // Set the minter address in the token contract to both DeFi contracts
-        token.setMinter(address(defiContract));
-        console.log("Token minter set to original DeFi contract:", address(defiContract));
+        // Add both DeFi contracts as minters for the token contract
+        // (This enables both contracts to mint cBTC and reward tokens)
+        token.addMinter(address(defiContract));
+        console.log("Added original DeFi contract as minter:", address(defiContract));
         
-        // Note: In production, you might want separate tokens for cBTC and rewards
-        // For now, both DeFi contracts can mint from the same token
+        token.addMinter(address(defiContractPrivate));
+        console.log("Added private DeFi contract as minter:", address(defiContractPrivate));
+        
+        // Note: Both cBTC and reward tokens use the same TrexToken contract
+        // Both DeFi contracts can now mint tokens independently
 
         vm.stopBroadcast();
 

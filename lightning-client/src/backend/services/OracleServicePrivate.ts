@@ -4,6 +4,11 @@ import {
   CitreaTransaction,
 } from "../../shared/types/index.js";
 import { SchnorrUtils } from "../../shared/utils/schnorr.js";
+import {
+  CONTRACT_ADDRESSES,
+  RPC_URLS,
+  DEFAULT_PRIVATE_KEY,
+} from "../../config/contracts.js";
 
 /**
  * Private Oracle service for interacting with Citrea Lightning Oracle Private contract (Schnorr-Private-2.0)
@@ -23,28 +28,45 @@ export class OracleServicePrivate {
 
   private async initialize() {
     try {
-      // Initialize Citrea provider
-      const rpcUrl = process.env.CITREA_RPC_URL;
-      const privateKey = process.env.CITREA_PRIVATE_KEY;
-      const oracleAddress = process.env.ORACLE_PRIVATE_CONTRACT_ADDRESS;
-      const defiAddress = process.env.DEFI_PRIVATE_CONTRACT_ADDRESS;
-      const tokenAddress = process.env.TOKEN_CONTRACT_ADDRESS;
+      // Use Citrea Testnet for production, fallback to local for development
+      const useTestnet =
+        process.env.NODE_ENV === "production" ||
+        process.env.USE_CITREA_TESTNET === "true";
 
-      if (!rpcUrl || !privateKey) {
-        throw new Error(
-          "Missing required environment variables for Citrea connection"
-        );
-      }
+      const rpcUrl = useTestnet ? RPC_URLS.CITREA_TESTNET : RPC_URLS.LOCAL;
+      const privateKey = useTestnet
+        ? process.env.CITREA_PRIVATE_KEY || DEFAULT_PRIVATE_KEY
+        : DEFAULT_PRIVATE_KEY;
+
+      const contractAddresses = useTestnet
+        ? CONTRACT_ADDRESSES.CITREA_TESTNET
+        : CONTRACT_ADDRESSES.LOCAL;
+
+      const oracleAddress = contractAddresses.ORACLE_PRIVATE_CONTRACT_ADDRESS;
+      const defiAddress = contractAddresses.DEFI_PRIVATE_CONTRACT_ADDRESS;
+      const tokenAddress = contractAddresses.TOKEN_CONTRACT_ADDRESS;
+
+      console.log(
+        `🔗 Connecting to contracts (${
+          useTestnet ? "Citrea Testnet" : "Local Anvil"
+        }):`,
+        {
+          rpcUrl,
+          oracleAddress,
+          defiAddress,
+          tokenAddress,
+        }
+      );
 
       this.provider = new ethers.JsonRpcProvider(rpcUrl);
       this.wallet = new ethers.Wallet(privateKey, this.provider);
 
       // Private Oracle contract ABI (Schnorr-Private-2.0)
       const oracleABI = [
-        "function verifyPaymentProof(bytes32 msgHash, bytes32 publicKeyX, bytes calldata signature) external returns (bool)",
+        "function verifyPaymentProof(bytes32 msgHash, bytes32 publicKeyX, bytes calldata signature, address receiver, uint256 invoiceAmount) external returns (bool)",
         "function isMessageVerified(bytes32 msgHash) external view returns (bool)",
         "function getMessageDetails(bytes32 msgHash) external view returns (address verifier, uint256 timestamp, bytes32 publicKeyX, bool verified)",
-        "function emergencyVerifyMessage(bytes32 msgHash, bytes32 publicKeyX) external",
+        "function emergencyVerifyMessage(bytes32 msgHash, bytes32 publicKeyX, address receiver, uint256 invoiceAmount) external",
         "event PaymentVerified(bytes32 indexed msgHash, address indexed verifier, uint256 timestamp, bytes32 publicKeyX)",
         "event PaymentRejected(bytes32 indexed msgHash, string reason)",
         "event DeFiActionTriggered(bytes32 indexed msgHash, address indexed defiContract, bytes actionData)",
@@ -121,7 +143,8 @@ export class OracleServicePrivate {
     msgHash: string;
     publicKeyX: string;
     signature: string;
-    userAddress?: string;
+    userAddress: string; // Required: address to receive rewards
+    invoiceAmount: string; // Required: Lightning invoice amount in wei
   }): Promise<OracleVerificationResult> {
     if (!this.isConnected() || !this.oracleContract) {
       throw new Error("Oracle service not connected");
@@ -131,6 +154,7 @@ export class OracleServicePrivate {
       console.log("Verifying payment proof (private approach):", {
         msgHash: proof.msgHash,
         publicKeyX: proof.publicKeyX,
+        publicKeyXLength: proof.publicKeyX.length,
         signatureLength: proof.signature.length,
       });
 
@@ -139,11 +163,13 @@ export class OracleServicePrivate {
       const publicKeyX = ethers.zeroPadValue(proof.publicKeyX, 32);
       const signature = ethers.getBytes(proof.signature);
 
-      // Verify the Schnorr signature on-chain
+      // Verify the Schnorr signature on-chain with receiver address and invoice amount
       const tx = await this.oracleContract.verifyPaymentProof(
         msgHash,
         publicKeyX,
-        signature
+        signature,
+        proof.userAddress, // Pass receiver address for token minting
+        proof.invoiceAmount // Pass invoice amount for reward calculation
       );
 
       console.log("Payment proof verification transaction:", tx.hash);
@@ -342,22 +368,21 @@ export class OracleServicePrivate {
   static createPrivateMessageHash(
     paymentHash: string,
     preimage: string,
+    amount: number,
     userAddress?: string,
     timestamp?: number
   ): string {
-    // Create a deterministic hash from payment details
+    // Create a deterministic hash from payment details using the same format as SchnorrUtils
     // This keeps the Lightning invoice details private while allowing verification
-    const data = ethers.AbiCoder.defaultAbiCoder().encode(
-      ["bytes32", "bytes32", "address", "uint256"],
-      [
-        paymentHash,
-        preimage,
-        userAddress || ethers.ZeroAddress,
-        timestamp || Math.floor(Date.now() / 1000),
-      ]
-    );
+    const ts = timestamp || Math.floor(Date.now() / 1000);
 
-    return ethers.keccak256(data);
+    // Use the same message format as SchnorrUtils.createPaymentMessage
+    const message = `lightning_payment:${paymentHash}:${preimage}:${amount}:${ts}`;
+
+    // Hash the message using keccak256
+    const msgHash = ethers.keccak256(ethers.toUtf8Bytes(message));
+
+    return msgHash;
   }
 
   /**
@@ -371,13 +396,25 @@ export class OracleServicePrivate {
     msgHash: string
   ): Promise<string> {
     try {
-      // Use the SchnorrUtils to generate signature
-      const signature = await SchnorrUtils.signMessage(
-        privateKey,
-        ethers.getBytes(msgHash)
+      const msgHashBytes = ethers.getBytes(msgHash);
+
+      // Use the SchnorrUtils to generate signature directly from the message hash
+      // The msgHash is already a hash, so we sign it directly
+      const signature = await SchnorrUtils.signMessageHash(
+        msgHashBytes,
+        ethers.getBytes(privateKey)
       );
 
-      return signature.r + signature.s;
+      // Concatenate r and s without 0x prefixes, then add single 0x prefix
+      const r = signature.r.startsWith("0x")
+        ? signature.r.substring(2)
+        : signature.r;
+      const s = signature.s.startsWith("0x")
+        ? signature.s.substring(2)
+        : signature.s;
+      const finalSignature = `0x${r}${s}`; // Concatenate and add single 0x prefix
+
+      return finalSignature;
     } catch (error) {
       console.error("Error generating Schnorr signature:", error);
       throw error;
@@ -407,7 +444,9 @@ export class OracleServicePrivate {
    */
   async emergencyVerifyMessage(
     msgHash: string,
-    publicKeyX: string
+    publicKeyX: string,
+    userAddress: string,
+    invoiceAmount: string
   ): Promise<CitreaTransaction> {
     if (!this.isConnected() || !this.oracleContract) {
       throw new Error("Oracle service not connected");
@@ -419,7 +458,9 @@ export class OracleServicePrivate {
 
       const tx = await this.oracleContract.emergencyVerifyMessage(
         hash,
-        pubKeyX
+        pubKeyX,
+        userAddress,
+        invoiceAmount
       );
       const receipt = await tx.wait();
 
