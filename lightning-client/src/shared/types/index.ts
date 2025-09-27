@@ -23,15 +23,21 @@ export interface SchnorrSignature {
 }
 
 export interface OracleVerificationResult {
-  isValid: boolean;
-  paymentHash: string;
-  amount: number;
-  timestamp: number;
+  success: boolean;
+  isValid?: boolean; // For backward compatibility
+  paymentHash?: string; // Optional for private approach
+  msgHash?: string; // For private approach
+  amount?: number;
+  timestamp?: number;
+  txHash?: string;
+  blockNumber?: number;
+  publicKeyX?: string; // For private approach
   error?: string;
+  message?: string;
 }
 
 export interface DeFiAction {
-  type: 'release_tokens' | 'unlock_funds' | 'mint_nft' | 'custom';
+  type: "release_tokens" | "unlock_funds" | "mint_nft" | "custom";
   amount?: number;
   tokenAddress?: string;
   recipient: string;
@@ -43,8 +49,9 @@ export interface SwapRequest {
   lightningAddress: string;
   amount: number;
   defiAction: DeFiAction;
-  status: 'pending' | 'paid' | 'verified' | 'completed' | 'failed';
+  status: "pending" | "paid" | "verified" | "completed" | "failed";
   createdAt: number;
+  completedAt?: number; // Add missing property
   paymentProof?: PaymentProof;
   transactionHash?: string;
 }
@@ -58,11 +65,12 @@ export interface LightningAddressData {
 
 export interface CitreaTransaction {
   hash: string;
-  from: string;
-  to: string;
-  value: string;
-  gasUsed: string;
-  status: 'pending' | 'confirmed' | 'failed';
+  from?: string;
+  to?: string;
+  value?: string;
+  gasUsed?: string;
+  status?: "pending" | "confirmed" | "failed";
   blockNumber?: number;
-  timestamp: number;
+  timestamp?: number;
+  success?: boolean; // For private approach
 }

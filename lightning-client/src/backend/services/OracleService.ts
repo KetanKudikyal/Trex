@@ -130,6 +130,7 @@ export class OracleService {
         const isValid = SchnorrUtils.verifyPaymentProof(proof);
 
         return {
+          success: isValid,
           isValid,
           paymentHash: proof.paymentHash,
           amount: proof.amount,
@@ -138,6 +139,7 @@ export class OracleService {
         };
       } catch (error) {
         return {
+          success: false,
           isValid: false,
           paymentHash: proof.paymentHash,
           amount: proof.amount,
@@ -196,6 +198,7 @@ export class OracleService {
 
       if (receipt.status === 1) {
         return {
+          success: true,
           isValid: true,
           paymentHash: proof.paymentHash,
           amount: proof.amount,
@@ -203,6 +206,7 @@ export class OracleService {
         };
       } else {
         return {
+          success: false,
           isValid: false,
           paymentHash: proof.paymentHash,
           amount: proof.amount,
@@ -213,6 +217,7 @@ export class OracleService {
     } catch (error) {
       console.error("Failed to verify payment proof on-chain:", error);
       return {
+        success: false,
         isValid: false,
         paymentHash: proof.paymentHash,
         amount: proof.amount,

@@ -5,10 +5,12 @@ import { WebSocketServer } from "ws";
 // import { ethers } from "ethers"; // Not used in this file
 import { LightningService } from "./services/LightningService.js";
 import { OracleService } from "./services/OracleService.js";
+import { OracleServicePrivate } from "./services/OracleServicePrivate.js";
 import { SwapService } from "./services/SwapService.js";
 import { lightningRoutes } from "./routes/lightning.js";
 import { swapRoutes } from "./routes/swap.js";
 import { oracleRoutes } from "./routes/oracle.js";
+import { oraclePrivateRoutes } from "./routes/oraclePrivate.js";
 
 // Load environment variables
 dotenv.config();
@@ -24,12 +26,14 @@ app.use(express.json());
 // Initialize services
 const lightningService = new LightningService();
 const oracleService = new OracleService();
+const oracleServicePrivate = new OracleServicePrivate();
 const swapService = new SwapService(lightningService, oracleService);
 
 // Routes
 app.use("/api/lightning", lightningRoutes(lightningService));
 app.use("/api/swap", swapRoutes(swapService));
 app.use("/api/oracle", oracleRoutes(oracleService));
+app.use("/api/oracle-private", oraclePrivateRoutes(oracleServicePrivate));
 
 // Health check endpoint
 app.get("/api/health", (_req, res) => {
@@ -39,6 +43,7 @@ app.get("/api/health", (_req, res) => {
     services: {
       lightning: lightningService.isConnected(),
       oracle: oracleService.isConnected(),
+      oraclePrivate: oracleServicePrivate.isConnected(),
       swap: swapService.isReady(),
     },
   });
