@@ -95,28 +95,25 @@ contract DeFiContractPrivate {
      * @param msgHash The verified message hash (arbitrary, privacy-preserving)
      * @param verifier The address that submitted the proof (liquidity provider)
      * @param publicKeyX The public key X coordinate used for verification
+     * @param invoiceAmount The Lightning invoice amount in wei
      */
     function onPaymentVerifiedPrivate(
         bytes32 msgHash,
         address verifier,
-        bytes32 publicKeyX
+        bytes32 publicKeyX,
+        uint256 invoiceAmount
     ) external onlyOracle messageNotProcessed(msgHash) {
         // Mark message as processed
         processedMessages[msgHash] = true;
         
-        // Calculate rewards for liquidity provider
-        uint256 cbtcAmount = cbtcRewardRate;
-        uint256 rewardAmount = rewardTokenRate;
+        // Calculate rewards: invoice amount + 1-2% for routing fees
+        // This gives users 3-4% total gain (1-2% from protocol + 2% from Lightning routing)
+        uint256 routingFeePercent = 150; // 1.5% in basis points (150/10000)
+        uint256 cbtcAmount = invoiceAmount + (invoiceAmount * routingFeePercent) / 10000;
+        uint256 rewardAmount = cbtcAmount / 10; // 10% of cBTC as reward tokens
         
-        // Apply bonus for high liquidity providers (future enhancement)
-        if (totalLiquidityProvided[verifier] > 10e18) { // 10 BTC threshold
-            cbtcAmount = (cbtcAmount * liquidityBonusMultiplier) / 100;
-            rewardAmount = (rewardAmount * liquidityBonusMultiplier) / 100;
-        }
-        
-        // Allocate cBTC and reward tokens
-        _allocateCBTC(verifier, cbtcAmount);
-        _allocateRewardTokens(verifier, rewardAmount);
+        // Simple ERC20 transfer - mint tokens directly to user
+        _transferTokens(verifier, cbtcAmount, rewardAmount);
         
         // Update liquidity tracking
         totalLiquidityProvided[verifier] += cbtcAmount;
@@ -132,52 +129,39 @@ contract DeFiContractPrivate {
     }
 
     /**
-     * @dev Allocate cBTC tokens to a liquidity provider
-     * @param recipient The address to receive cBTC
-     * @param amount The amount of cBTC to allocate
+     * @dev Simple token transfer using ERC20 interface
+     * @param recipient The address to receive tokens
+     * @param cbtcAmount The amount of cBTC tokens to transfer
+     * @param rewardAmount The amount of reward tokens to transfer
      */
-    function _allocateCBTC(address recipient, uint256 amount) internal {
-        userCBTCBalances[recipient] += amount;
-        totalCBTCAllocated += amount;
+    function _transferTokens(address recipient, uint256 cbtcAmount, uint256 rewardAmount) internal {
+        userCBTCBalances[recipient] += cbtcAmount;
+        totalCBTCAllocated += cbtcAmount;
         
-        // Mint cBTC tokens
+        userRewardBalances[recipient] += rewardAmount;
+        totalRewardTokensAllocated += rewardAmount;
+        
+        // Simple ERC20 transfer - mint tokens directly to user
         if (cbtcTokenContract != address(0)) {
             (bool success, ) = cbtcTokenContract.call(
-                abi.encodeWithSignature("mint(address,uint256)", recipient, amount)
+                abi.encodeWithSignature("mint(address,uint256)", recipient, cbtcAmount)
             );
-            require(success, "cBTC minting failed");
+            require(success, "cBTC transfer failed");
         }
         
-        emit CBTCAllocated(
-            keccak256(abi.encodePacked(recipient, block.timestamp)), 
-            recipient, 
-            amount, 
-            block.timestamp
-        );
-    }
-
-    /**
-     * @dev Allocate reward tokens to a liquidity provider
-     * @param recipient The address to receive reward tokens
-     * @param amount The amount of reward tokens to allocate
-     */
-    function _allocateRewardTokens(address recipient, uint256 amount) internal {
-        userRewardBalances[recipient] += amount;
-        totalRewardTokensAllocated += amount;
-        
-        // Mint reward tokens
         if (rewardTokenContract != address(0)) {
             (bool success, ) = rewardTokenContract.call(
-                abi.encodeWithSignature("mint(address,uint256)", recipient, amount)
+                abi.encodeWithSignature("mint(address,uint256)", recipient, rewardAmount)
             );
-            require(success, "Reward token minting failed");
+            require(success, "Reward token transfer failed");
         }
         
-        emit RewardTokensAllocated(
+        emit LiquidityIncentivePaid(
             keccak256(abi.encodePacked(recipient, block.timestamp)), 
             recipient, 
-            amount, 
-            block.timestamp
+            cbtcAmount, 
+            rewardAmount, 
+            0x0
         );
     }
 
@@ -220,7 +204,7 @@ contract DeFiContractPrivate {
         
         // Apply temporary liquidity boost
         uint256 bonusCBTC = (boostAmount * 120) / 100; // 20% bonus
-        _allocateCBTC(recipient, bonusCBTC);
+        _transferTokens(recipient, bonusCBTC, 0);
     }
 
     /**
@@ -236,7 +220,7 @@ contract DeFiContractPrivate {
         uint256 nodeReward = (liquidityProvided * 5) / 100; // 5% of liquidity as node reward
         uint256 feeShare = (routingFees * 50) / 100; // 50% of routing fees
         
-        _allocateRewardTokens(recipient, nodeReward + feeShare);
+        _transferTokens(recipient, 0, nodeReward + feeShare);
     }
 
     /**
@@ -247,7 +231,7 @@ contract DeFiContractPrivate {
     function _executeGenericAction(address recipient, bytes memory actionData) internal {
         // Implement generic custom action logic
         // This could be anything based on the specific DeFi application
-        _allocateRewardTokens(recipient, rewardTokenRate);
+        _transferTokens(recipient, 0, rewardTokenRate);
     }
 
     // View functions

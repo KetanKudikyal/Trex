@@ -58,6 +58,7 @@ contract LightningOraclePrivate {
      * @param msgHash The message hash (constructed off-chain from preimage + paymentHash)
      * @param publicKeyX The public key X coordinate used to sign the payment proof
      * @param signature The Schnorr signature (64 bytes: 32 bytes r + 32 bytes s)
+     * @param receiver The address to receive the rewards (liquidity provider)
      * @return success True if the signature is valid and payment is verified
      * 
      * @notice In Schnorr-Private-2.0:
@@ -69,7 +70,9 @@ contract LightningOraclePrivate {
     function verifyPaymentProof(
         bytes32 msgHash,
         bytes32 publicKeyX,
-        bytes calldata signature
+        bytes calldata signature,
+        address receiver,
+        uint256 invoiceAmount
     ) external returns (bool success) {
         // Check if message is already verified
         require(!verifiedMessages[msgHash], "Message already verified");
@@ -93,8 +96,8 @@ contract LightningOraclePrivate {
             
             emit PaymentVerified(msgHash, msg.sender, block.timestamp, publicKeyX);
             
-            // Notify DeFi contract
-            _notifyDeFiContract(msgHash, msg.sender, publicKeyX);
+            // Notify DeFi contract with receiver address and invoice amount
+            _notifyDeFiContract(msgHash, receiver, publicKeyX, invoiceAmount);
             
             return true;
         } else {
@@ -142,16 +145,18 @@ contract LightningOraclePrivate {
     function _notifyDeFiContract(
         bytes32 msgHash,
         address verifier,
-        bytes32 publicKeyX
+        bytes32 publicKeyX,
+        uint256 invoiceAmount
     ) internal {
         if (defiContract != address(0)) {
             // Call the DeFi contract's onPaymentVerified function
             (bool success, bytes memory data) = defiContract.call(
                 abi.encodeWithSignature(
-                    "onPaymentVerifiedPrivate(bytes32,address,bytes32)",
+                    "onPaymentVerifiedPrivate(bytes32,address,bytes32,uint256)",
                     msgHash,
                     verifier,
-                    publicKeyX
+                    publicKeyX,
+                    invoiceAmount
                 )
             );
             
@@ -205,12 +210,17 @@ contract LightningOraclePrivate {
      * @dev Emergency function to mark message as verified (only owner)
      * @param msgHash The message hash to mark as verified
      * @param publicKeyX The public key to associate with the message
+     * @param receiver The address to receive the rewards (liquidity provider)
      */
     function emergencyVerifyMessage(
         bytes32 msgHash,
-        bytes32 publicKeyX
+        bytes32 publicKeyX,
+        address receiver,
+        uint256 invoiceAmount
     ) external onlyOwner {
         require(!verifiedMessages[msgHash], "Message already verified");
+        require(receiver != address(0), "Invalid receiver address");
+        require(invoiceAmount > 0, "Invalid invoice amount");
         
         verifiedMessages[msgHash] = true;
         messageTimestamps[msgHash] = block.timestamp;
@@ -219,8 +229,8 @@ contract LightningOraclePrivate {
         
         emit PaymentVerified(msgHash, msg.sender, block.timestamp, publicKeyX);
         
-        // Notify DeFi contract
-        _notifyDeFiContract(msgHash, msg.sender, publicKeyX);
+        // Notify DeFi contract with receiver address and invoice amount
+        _notifyDeFiContract(msgHash, receiver, publicKeyX, invoiceAmount);
     }
 
     /**
