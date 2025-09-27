@@ -295,6 +295,52 @@ export class UIManager {
   }
 
   /**
+   * Update contract information
+   */
+  updateContractInfo(contractInfo) {
+    const oracleContractEl = document.getElementById("oracle-contract");
+    if (oracleContractEl) {
+      oracleContractEl.textContent = contractInfo.oracle || "Not deployed";
+    }
+
+    const defiContractEl = document.getElementById("defi-contract");
+    if (defiContractEl) {
+      defiContractEl.textContent = contractInfo.defi || "Not deployed";
+    }
+
+    const tokenContractEl = document.getElementById("token-contract");
+    if (tokenContractEl) {
+      tokenContractEl.textContent = contractInfo.token || "Not deployed";
+    }
+  }
+
+  /**
+   * Update token information
+   */
+  updateTokenInfo(tokenInfo) {
+    const tokenSupplyEl = document.getElementById("token-supply");
+    if (tokenSupplyEl) {
+      tokenSupplyEl.textContent = tokenInfo.supply
+        ? tokenInfo.supply.toLocaleString()
+        : "-";
+    }
+
+    const tokenBalanceEl = document.getElementById("token-balance");
+    if (tokenBalanceEl) {
+      tokenBalanceEl.textContent = tokenInfo.balance
+        ? tokenInfo.balance.toLocaleString()
+        : "-";
+    }
+
+    const defiBalanceEl = document.getElementById("defi-balance");
+    if (defiBalanceEl) {
+      defiBalanceEl.textContent = tokenInfo.defiBalance
+        ? tokenInfo.defiBalance.toLocaleString()
+        : "-";
+    }
+  }
+
+  /**
    * Show verification result
    */
   showVerificationResult(isValid, details) {

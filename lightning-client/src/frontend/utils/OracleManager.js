@@ -23,10 +23,12 @@ export class OracleManager {
    */
   async loadStatus() {
     try {
-      const [blockResponse, walletResponse] = await Promise.all([
-        fetch(`${this.baseUrl}/block`),
-        fetch(`${this.baseUrl}/wallet`),
-      ]);
+      const [blockResponse, walletResponse, contractsResponse] =
+        await Promise.all([
+          fetch(`${this.baseUrl}/block`),
+          fetch(`${this.baseUrl}/wallet`),
+          fetch(`${this.baseUrl}/contracts`),
+        ]);
 
       if (blockResponse.ok) {
         const blockData = await blockResponse.json();
@@ -37,6 +39,11 @@ export class OracleManager {
         const walletData = await walletResponse.json();
         this.status.walletAddress = walletData.address;
         this.status.walletBalance = walletData.balance;
+      }
+
+      if (contractsResponse.ok) {
+        const contractsData = await contractsResponse.json();
+        this.status.contractInfo = contractsData;
       }
 
       this.status.connected = true;
@@ -53,6 +60,63 @@ export class OracleManager {
    */
   getStatus() {
     return this.status;
+  }
+
+  /**
+   * Load contract information
+   */
+  async loadContractInfo() {
+    try {
+      const response = await fetch(`${this.baseUrl}/contracts`);
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to load contract info:", error);
+      return null;
+    }
+  }
+
+  /**
+   * Load token information
+   */
+  async loadTokenInfo(userAddress = null) {
+    try {
+      const requests = [fetch(`${this.baseUrl}/token/supply`)];
+
+      // If user address is provided, get user-specific data
+      if (userAddress) {
+        requests.push(
+          fetch(`${this.baseUrl}/token/balance/${userAddress}`),
+          fetch(`${this.baseUrl}/defi/balance/${userAddress}`)
+        );
+      }
+
+      const responses = await Promise.all(requests);
+      const data = {};
+
+      if (responses[0].ok) {
+        const supplyData = await responses[0].json();
+        data.supply = supplyData.supply;
+      }
+
+      if (userAddress && responses[1] && responses[1].ok) {
+        const balanceData = await responses[1].json();
+        data.balance = balanceData.balance;
+      }
+
+      if (userAddress && responses[2] && responses[2].ok) {
+        const defiBalanceData = await responses[2].json();
+        data.defiBalance = defiBalanceData.balance;
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Failed to load token info:", error);
+      return null;
+    }
   }
 
   /**
