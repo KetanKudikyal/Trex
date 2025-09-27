@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.25;
+pragma solidity ^0.8.19;
 
 /// @title secp256r1 Precompile Example
 /// @notice Calls the secp256r1 precompile to verify secp256r1 ECDSA signatures
