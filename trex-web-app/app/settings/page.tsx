@@ -54,7 +54,7 @@ export default function Home() {
               Lightning Fast
             </CardTitle>
             <CardDescription className="text-gray-200 text-base">
-              Execute swaps instantly with Lightning Network's speed
+              Execute swaps instantly with Lightning Network&apos;s speed
             </CardDescription>
           </CardHeader>
         </Card>

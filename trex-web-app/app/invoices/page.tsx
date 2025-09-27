@@ -209,7 +209,7 @@ export default function InvoicesPage() {
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   <code className="flex-1 font-mono text-xs bg-muted p-2 rounded text-muted-foreground truncate">
-                    {invoice.paymentRequest.slice(0, 16)}+"..."
+                    {invoice.paymentRequest.slice(0, 16)}...
                   </code>
                   <Button
                     variant="secondary"

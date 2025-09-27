@@ -26,7 +26,9 @@ export default function PaymentModal({
   address = '-',
   paymentRequest = '',
 }: PaymentModalProps) {
-  const [status, setStatus] = useState<'waiting' | 'paid' | 'failed'>('waiting')
+  const [status, _setStatus] = useState<'waiting' | 'paid' | 'failed'>(
+    'waiting'
+  )
   const [copied, setCopied] = useState(false)
 
   const handleCopyPaymentRequest = async () => {

@@ -8,12 +8,12 @@ import { CheckCircle, XCircle } from 'lucide-react'
 import { useState } from 'react'
 
 export default function OracleSection() {
-  const [oracleStatus, setOracleStatus] = useState<
+  const [oracleStatus, _setOracleStatus] = useState<
     'connecting' | 'connected' | 'disconnected'
   >('connecting')
-  const [blockHeight, setBlockHeight] = useState<string>('-')
-  const [walletBalance, setWalletBalance] = useState<string>('-')
-  const [walletAddress, setWalletAddress] = useState<string>('-')
+  const [blockHeight, _setBlockHeight] = useState<string>('-')
+  const [walletBalance, _setWalletBalance] = useState<string>('-')
+  const [walletAddress, _setWalletAddress] = useState<string>('-')
   const [paymentHash, setPaymentHash] = useState('')
   const [verificationResult, setVerificationResult] = useState<string>('')
 
