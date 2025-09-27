@@ -17,7 +17,7 @@ const Navbar = () => {
                 : 'text-white hover:text-gray-300'
             }`}
           >
-            Citrea lightning Hub
+            Citrea LN Hub
           </Button>
         </Link>
         <Link href="/invoices">

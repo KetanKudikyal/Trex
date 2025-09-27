@@ -12,9 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center justify-between h-16">
             <Link href={'/'} className="flex items-center space-x-3">
               <Zap className="h-8 w-8 text-yellow-300 animate-pulse" />
-              <span className="text-2xl font-bold text-white">
-                Lightning Client
-              </span>
+              <span className="text-2xl font-bold text-white">LN Client</span>
             </Link>
             <Navbar />
           </div>

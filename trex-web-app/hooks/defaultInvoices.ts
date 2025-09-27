@@ -1,4 +1,14 @@
-export const defaultInvoices = [
+export interface Invoice {
+  id: string
+  paymentRequest: string
+  paymentHash: string
+  transactionHash: string
+  amount: number
+  description: string
+  status: 'paid' | 'failed' | 'pending'
+}
+
+export const defaultInvoices: Invoice[] = [
   {
     id: '1',
     paymentRequest:
@@ -8,6 +18,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / LiquidBridge',
+    status: 'pending',
   },
   {
     id: '2',
@@ -18,6 +29,7 @@ export const defaultInvoices = [
       '7312785312799f19c594755d4391e1730b739aacfc1cdf36ae5de67936d04783',
     transactionHash: '-',
     description: 'CLH / ThunderPool',
+    status: 'pending',
   },
   {
     id: '3',
@@ -28,6 +40,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / CitreaFlux',
+    status: 'pending',
   },
   {
     id: '4',
@@ -38,6 +51,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / SwapStream',
+    status: 'pending',
   },
   {
     id: '5',
@@ -48,6 +62,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / NodeNexus',
+    status: 'pending',
   },
   {
     id: '6',
@@ -58,6 +73,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / CitreaSocial',
+    status: 'pending',
   },
   {
     id: '7',
@@ -68,6 +84,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / VoltVillage',
+    status: 'pending',
   },
   {
     id: '8',
@@ -78,6 +95,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / FlashFlow',
+    status: 'pending',
   },
   {
     id: '9',
@@ -88,6 +106,7 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / ThunderSwap',
+    status: 'pending',
   },
   {
     id: '10',
@@ -98,5 +117,6 @@ export const defaultInvoices = [
     transactionHash: '-',
     amount: 10,
     description: 'CLH / CitreaStream',
+    status: 'pending',
   },
 ]

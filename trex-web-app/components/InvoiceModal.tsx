@@ -1,6 +1,5 @@
 'use client'
 
-import { Invoice, invoices as invoiceData } from '@/app/invoices/page'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -10,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { defaultInvoices, Invoice } from '@/hooks/defaultInvoices'
 import useWLNPayments from '@/hooks/useWLNPayments'
 import { Check, Copy, Zap } from 'lucide-react'
 import { useState } from 'react'
@@ -20,7 +20,7 @@ interface InvoiceModalProps {
 
 export default function InvoiceModal({ children }: InvoiceModalProps) {
   // Mock data - replace with your actual data source
-  const [invoices, setInvoices] = useState<Invoice[]>(invoiceData)
+  const [invoices, setInvoices] = useState<Invoice[]>(defaultInvoices)
 
   const [copied, setCopied] = useState<string | null>(null)
   const [payingInvoiceId, setPayingInvoiceId] = useState<string | null>(null)
@@ -85,7 +85,7 @@ export default function InvoiceModal({ children }: InvoiceModalProps) {
                 <div className="space-y-1">
                   <h4 className="font-medium">{invoice.description}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {new Date(invoice.timestamp).toLocaleString()}
+                    -{/* {new Date(invoice.timestamp).toLocaleString()} */}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

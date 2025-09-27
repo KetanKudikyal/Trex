@@ -26,6 +26,7 @@ import {
 
 import { FillOrderModal } from '@/components/FillOrderModal'
 import useSwapStateStore from '@/store'
+import Link from 'next/link'
 
 function useInvoices() {
   return useSwapStateStore((state) => state.invoices)
@@ -76,10 +77,15 @@ export const columns: ColumnDef<Payment>[] = [
     cell: ({ row }) => {
       const hash = row.getValue('transactionHash') as string
       return (
-        <div className="font-mono text-sm truncate max-w-[200px] flex items-center gap-2">
-          <span className="truncate">{hash}</span>
-          {hash !== '-' && <CopyButton text={hash} />}
-        </div>
+        <Link
+          target="_blank"
+          href={`https://explorer.testnet.citrea.xyz/tx/${hash}`}
+        >
+          <div className="font-mono hover:underline text-sm truncate max-w-[200px] flex items-center gap-2">
+            <span className="truncate">{hash}</span>
+            {hash !== '-' && <CopyButton text={hash} />}
+          </div>
+        </Link>
       )
     },
   },
@@ -109,7 +115,11 @@ export const columns: ColumnDef<Payment>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const payment = row.original
-      return <FillOrderModal payment={payment} />
+      return payment.transactionHash !== '-' ? (
+        '-'
+      ) : (
+        <FillOrderModal payment={payment} />
+      )
     },
   },
 ]
