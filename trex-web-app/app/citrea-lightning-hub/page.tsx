@@ -30,16 +30,18 @@ export default function Home() {
 
         <div className="flex gap-6 z-50 relative justify-center pt-8">
           <CreateSwapModal>
-            <Button size="lg" variant="outline">
+            <Button
+              style={{
+                background:
+                  'linear-gradient(to left, rgba(250, 176, 5, 0.8) 0%, rgba(234, 86, 40, 0.8) 100%)',
+              }}
+              size="lg"
+              variant="outline"
+            >
               Create Swap
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </CreateSwapModal>
-          {!address && (
-            <Button size="lg" onClick={openConnectModal}>
-              Connect Wallet
-            </Button>
-          )}
         </div>
       </div>
 

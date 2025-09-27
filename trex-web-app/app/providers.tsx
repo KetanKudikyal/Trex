@@ -1,4 +1,5 @@
 'use client'
+import { Toaster } from '@/components/ui/sonner'
 import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import '@rainbow-me/rainbowkit/styles.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -22,7 +23,10 @@ const Providers: React.FC<{ children: React.ReactNode }> = ({
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>{children}</RainbowKitProvider>
+        <RainbowKitProvider>
+          {children}
+          <Toaster />
+        </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )

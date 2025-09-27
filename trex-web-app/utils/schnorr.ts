@@ -1,10 +1,17 @@
-import { getPublicKey, sign, verify } from '@noble/secp256k1'
+import { getPublicKey, hashes, sign, verify } from '@noble/secp256k1'
 import { createHash, randomBytes } from 'crypto'
 import { PaymentProof } from '../types/index'
 
-// Set up the required hash function for @noble/secp256k1
-// The library now uses a different approach for hash functions
-// We'll use the built-in hash function instead of trying to override it
+// Set up hash functions for @noble/secp256k1
+hashes.sha256 = (message: Uint8Array): Uint8Array => {
+  return new Uint8Array(createHash('sha256').update(message).digest())
+}
+
+hashes.hmacSha256 = (key: Uint8Array, message: Uint8Array): Uint8Array => {
+  return new Uint8Array(
+    createHash('sha256').update(key).update(message).digest()
+  )
+}
 
 /**
  * Schnorr signature utilities for Lightning Network payment proofs

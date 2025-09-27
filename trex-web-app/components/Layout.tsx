@@ -20,7 +20,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main className="pt-24 pb-16">
+      <main className="pt-20 pb-16">
         <div className="h-[100px] w-full"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{children}</div>
       </main>

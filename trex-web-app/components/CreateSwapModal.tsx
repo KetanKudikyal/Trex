@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import useSwapStateStore from '@/store'
+import useSwapStateStore, { ActiveSwap } from '@/store'
 import { PaymentProof } from '@/types'
 import { Check, Coins, Copy, Zap } from 'lucide-react'
 import Link from 'next/link'
@@ -108,16 +108,14 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
     }
   }
 
-  const handlePayWithWebLN = async () => {
-    if (!window.webln || !activeSwap?.paymentRequest) return
+  const handlePayWithWebLN = async ({ swap }: { swap: ActiveSwap }) => {
+    if (!window.webln || !swap?.paymentRequest) return
     try {
       setOperationState('enabling-webln')
       await window.webln.enable()
 
       setOperationState('paying')
-      const paymentResult = await window.webln.sendPayment(
-        activeSwap.paymentRequest
-      )
+      const paymentResult = await window.webln.sendPayment(swap.paymentRequest)
       setPreimage(paymentResult.preimage)
 
       // Extract preimage and paymentHash from payment result
@@ -132,7 +130,7 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
         throw new Error('No paymentHash received from payment')
       }
 
-      if (!activeSwap.amount) {
+      if (!swap.amount) {
         throw new Error('No amount received from payment')
       }
 
@@ -140,8 +138,8 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
       const paymentProof = await createPaymentProof({
         paymentHash: paymentHash,
         preimage: preimage,
-        amount: activeSwap.amount,
-        lightningAddress: activeSwap.lightningAddress,
+        amount: swap.amount,
+        lightningAddress: swap.lightningAddress,
       })
 
       setOperationState('verifying-proof')
@@ -267,7 +265,11 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
                 </Button>
                 <Button
                   onClick={handleSwap}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  style={{
+                    background:
+                      'linear-gradient(to left, rgba(250, 176, 5, 0.8) 0%, rgba(234, 86, 40, 0.8) 100%)',
+                  }}
+                  className="flex-1 "
                   disabled={!lightningAddress || !amount}
                 >
                   <Coins className="h-4 w-4 mr-2" />
@@ -302,7 +304,7 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
                       <Button
                         variant="default"
                         className="flex-1 bg-blue-600 hover:bg-blue-700"
-                        onClick={handlePayWithWebLN}
+                        onClick={() => handlePayWithWebLN({ swap: activeSwap })}
                       >
                         <Zap
                           className={`h-4 w-4 mr-2 ${
@@ -366,27 +368,33 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
                         <div className="p-4 bg-muted rounded-lg">
                           <div className="flex justify-between items-center text-sm text-muted-foreground mb-2">
                             <span>Transaction Hash</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8"
-                              onClick={() => {
-                                navigator.clipboard.writeText(txHash)
-                                setCopied(true)
-                                setTimeout(() => setCopied(false), 2000)
-                              }}
-                            >
-                              <Copy className="h-3 w-3" />
-                            </Button>
+                            {txHash !== '-' && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(txHash)
+                                  setCopied(true)
+                                  setTimeout(() => setCopied(false), 2000)
+                                }}
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                            )}
                           </div>
-                          <Link
-                            href={`https://explorer.citrea.xyz/tx/${txHash}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs break-all text-blue-500 hover:text-blue-600 underline"
-                          >
-                            {txHash}
-                          </Link>
+                          {txHash !== '-' ? (
+                            <Link
+                              href={`https://explorer.citrea.xyz/tx/${txHash}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs break-all text-blue-500 hover:text-blue-600 underline"
+                            >
+                              {txHash}
+                            </Link>
+                          ) : (
+                            <span className="text-xs break-all">{txHash}</span>
+                          )}
                         </div>
                       )}
                     </div>
