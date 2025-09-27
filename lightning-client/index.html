@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lightning Client - Scriptless Atomic Swaps</title>
+    <link rel="stylesheet" href="/src/frontend/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="header">
+        <div class="container">
+          <h1 class="logo">⚡ Lightning Client</h1>
+          <nav class="nav">
+            <a href="#home" class="nav-link active">Home</a>
+            <a href="#swaps" class="nav-link">Swaps</a>
+            <a href="#oracle" class="nav-link">Oracle</a>
+            <a href="#settings" class="nav-link">Settings</a>
+          </nav>
+        </div>
+      </header>
+
+      <main class="main">
+        <!-- Home Section -->
+        <section id="home" class="section active">
+          <div class="container">
+            <div class="hero">
+              <h2>Scriptless Atomic Swaps</h2>
+              <p>
+                Exchange Lightning Network payments for Citrea tokens using
+                Schnorr signatures
+              </p>
+              <div class="hero-actions">
+                <button id="create-swap-btn" class="btn btn-primary">
+                  Create Swap
+                </button>
+                <button id="connect-wallet-btn" class="btn btn-secondary">
+                  Connect Wallet
+                </button>
+              </div>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card">
+                <h3>Total Swaps</h3>
+                <div class="stat-value" id="total-swaps">0</div>
+              </div>
+              <div class="stat-card">
+                <h3>Completed</h3>
+                <div class="stat-value" id="completed-swaps">0</div>
+              </div>
+              <div class="stat-card">
+                <h3>Pending</h3>
+                <div class="stat-value" id="pending-swaps">0</div>
+              </div>
+              <div class="stat-card">
+                <h3>Success Rate</h3>
+                <div class="stat-value" id="success-rate">0%</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Swaps Section -->
+        <section id="swaps" class="section">
+          <div class="container">
+            <div class="section-header">
+              <h2>Atomic Swaps</h2>
+              <button id="refresh-swaps-btn" class="btn btn-outline">
+                Refresh
+              </button>
+            </div>
+
+            <div class="swaps-list" id="swaps-list">
+              <!-- Swaps will be populated here -->
+            </div>
+          </div>
+        </section>
+
+        <!-- Oracle Section -->
+        <section id="oracle" class="section">
+          <div class="container">
+            <div class="section-header">
+              <h2>Oracle Status</h2>
+              <div class="status-indicator" id="oracle-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting...</span>
+              </div>
+            </div>
+
+            <div class="oracle-info">
+              <div class="info-card">
+                <h3>Block Height</h3>
+                <div class="info-value" id="block-height">-</div>
+              </div>
+              <div class="info-card">
+                <h3>Wallet Balance</h3>
+                <div class="info-value" id="wallet-balance">-</div>
+              </div>
+              <div class="info-card">
+                <h3>Wallet Address</h3>
+                <div class="info-value" id="wallet-address">-</div>
+              </div>
+            </div>
+
+            <div class="verification-section">
+              <h3>Payment Verification</h3>
+              <form id="verify-payment-form" class="form">
+                <div class="form-group">
+                  <label for="payment-hash">Payment Hash</label>
+                  <input
+                    type="text"
+                    id="payment-hash"
+                    placeholder="Enter payment hash"
+                  />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  Verify Payment
+                </button>
+              </form>
+              <div id="verification-result" class="verification-result"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings" class="section">
+          <div class="container">
+            <h2>Settings</h2>
+            <div class="settings-form">
+              <div class="form-group">
+                <label for="lightning-address">Lightning Address</label>
+                <input
+                  type="text"
+                  id="lightning-address"
+                  placeholder="your@lightning.address"
+                />
+              </div>
+              <div class="form-group">
+                <label for="citrea-rpc">Citrea RPC URL</label>
+                <input
+                  type="text"
+                  id="citrea-rpc"
+                  placeholder="https://citrea-rpc.example.com"
+                />
+              </div>
+              <div class="form-group">
+                <label for="oracle-contract">Oracle Contract Address</label>
+                <input type="text" id="oracle-contract" placeholder="0x..." />
+              </div>
+              <button id="save-settings-btn" class="btn btn-primary">
+                Save Settings
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Swap Modal -->
+      <div id="swap-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Create Atomic Swap</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <form id="swap-form" class="form">
+              <div class="form-group">
+                <label for="swap-lightning-address">Lightning Address</label>
+                <input
+                  type="text"
+                  id="swap-lightning-address"
+                  placeholder="recipient@lightning.address"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="swap-amount">Amount (sats)</label>
+                <input
+                  type="number"
+                  id="swap-amount"
+                  placeholder="1000"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="swap-action">DeFi Action</label>
+                <select id="swap-action" required>
+                  <option value="release_tokens">Release Tokens</option>
+                  <option value="unlock_funds">Unlock Funds</option>
+                  <option value="mint_nft">Mint NFT</option>
+                  <option value="custom">Custom Action</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="swap-description">Description (optional)</label>
+                <input
+                  type="text"
+                  id="swap-description"
+                  placeholder="Swap description"
+                />
+              </div>
+              <div class="form-actions">
+                <button type="button" class="btn btn-secondary modal-close">
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  Create Swap
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Modal -->
+      <div id="payment-modal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Lightning Payment</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="payment-info">
+              <div class="payment-amount">
+                <span class="amount-label">Amount:</span>
+                <span class="amount-value" id="payment-amount">0 sats</span>
+              </div>
+              <div class="payment-address">
+                <span class="address-label">To:</span>
+                <span class="address-value" id="payment-address">-</span>
+              </div>
+            </div>
+            <div class="payment-request">
+              <label for="payment-request">Payment Request</label>
+              <textarea id="payment-request" readonly rows="4"></textarea>
+              <div class="payment-actions">
+                <button id="copy-payment-request" class="btn btn-outline">
+                  Copy
+                </button>
+                <button
+                  id="webln-pay-button"
+                  class="btn btn-primary"
+                  style="display: none"
+                >
+                  Pay with WebLN
+                </button>
+              </div>
+            </div>
+            <div class="payment-status">
+              <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span class="status-text">Waiting for payment...</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toast Notifications -->
+      <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <script type="module" src="/src/frontend/main.js"></script>
+  </body>
+</html>
