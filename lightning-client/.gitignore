@@ -102,3 +102,4 @@ temp/
 
 # Local development
 .local
+.env.backup
