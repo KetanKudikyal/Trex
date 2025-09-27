@@ -13,6 +13,8 @@ export class OracleService {
   private provider: ethers.Provider | null = null;
   private wallet: ethers.Wallet | null = null;
   private oracleContract: ethers.Contract | null = null;
+  private defiContract: ethers.Contract | null = null;
+  private tokenContract: ethers.Contract | null = null;
   private isConnectedFlag = false;
 
   constructor() {
@@ -25,6 +27,8 @@ export class OracleService {
       const rpcUrl = process.env.CITREA_RPC_URL;
       const privateKey = process.env.CITREA_PRIVATE_KEY;
       const oracleAddress = process.env.ORACLE_CONTRACT_ADDRESS;
+      const defiAddress = process.env.DEFI_CONTRACT_ADDRESS;
+      const tokenAddress = process.env.TOKEN_CONTRACT_ADDRESS;
 
       if (!rpcUrl || !privateKey) {
         throw new Error(
@@ -40,11 +44,28 @@ export class OracleService {
         "function verifyPaymentProof(bytes32 paymentHash, bytes32 preimage, uint256 amount, bytes32 publicKeyX, bytes calldata signature) external returns (bool)",
         "function isPaymentVerified(bytes32 paymentHash) external view returns (bool)",
         "function getPaymentDetails(bytes32 paymentHash) external view returns (uint256 amount, uint256 timestamp, bool verified)",
+        "function emergencyVerifyPayment(bytes32 paymentHash, uint256 amount) external",
         "event PaymentVerified(bytes32 indexed paymentHash, address indexed verifier, uint256 amount, uint256 timestamp)",
         "event PaymentRejected(bytes32 indexed paymentHash, string reason)",
       ];
 
-      // Only initialize contract if address is provided
+      // DeFi contract ABI
+      const defiABI = [
+        "function getBalance(address user) external view returns (uint256)",
+        "function isPaymentProcessed(bytes32 paymentHash) external view returns (bool)",
+        "function onPaymentVerified(bytes32 paymentHash, uint256 amount, bytes32 preimage) external",
+      ];
+
+      // Token contract ABI
+      const tokenABI = [
+        "function balanceOf(address account) external view returns (uint256)",
+        "function totalSupply() external view returns (uint256)",
+        "function mint(address to, uint256 amount) external",
+        "function name() external view returns (string)",
+        "function symbol() external view returns (string)",
+      ];
+
+      // Initialize contracts if addresses are provided
       if (oracleAddress) {
         this.oracleContract = new ethers.Contract(
           oracleAddress,
@@ -56,6 +77,24 @@ export class OracleService {
         console.log(
           "⚠️  Oracle contract not deployed - running in simulation mode"
         );
+      }
+
+      if (defiAddress) {
+        this.defiContract = new ethers.Contract(
+          defiAddress,
+          defiABI,
+          this.wallet
+        );
+        console.log(`🔗 DeFi contract: ${defiAddress}`);
+      }
+
+      if (tokenAddress) {
+        this.tokenContract = new ethers.Contract(
+          tokenAddress,
+          tokenABI,
+          this.wallet
+        );
+        console.log(`🔗 Token contract: ${tokenAddress}`);
       }
 
       this.isConnectedFlag = true;
@@ -111,17 +150,42 @@ export class OracleService {
     }
 
     try {
+      // Add 0x prefix if not present and convert hex strings to bytes32 format
+      const paymentHashHex = proof.paymentHash.startsWith("0x")
+        ? proof.paymentHash
+        : "0x" + proof.paymentHash;
+      const preimageHex = proof.preimage.startsWith("0x")
+        ? proof.preimage
+        : "0x" + proof.preimage;
+      const signatureHex = proof.signature.startsWith("0x")
+        ? proof.signature
+        : "0x" + proof.signature;
+      const publicKeyHex = proof.publicKey.startsWith("0x")
+        ? proof.publicKey
+        : "0x" + proof.publicKey;
+
+      const paymentHashBytes32 = ethers.getBytes(paymentHashHex);
+      const preimageBytes32 = ethers.getBytes(preimageHex);
+
       // Convert signature to the format expected by the contract
-      const signature = Buffer.from(proof.signature, "hex");
+      const signature = ethers.getBytes(signatureHex);
 
       // Extract public key X coordinate (first 32 bytes)
-      const publicKey = Buffer.from(proof.publicKey, "hex");
+      const publicKey = ethers.getBytes(publicKeyHex);
       const publicKeyX = publicKey.slice(0, 32);
+
+      console.log("🔍 Contract verification parameters:", {
+        paymentHash: proof.paymentHash,
+        preimage: proof.preimage,
+        amount: proof.amount,
+        publicKeyX: ethers.hexlify(publicKeyX),
+        signatureLength: signature.length,
+      });
 
       // Call the oracle contract
       const tx = await this.oracleContract.verifyPaymentProof(
-        proof.paymentHash,
-        proof.preimage,
+        paymentHashBytes32,
+        preimageBytes32,
         proof.amount,
         publicKeyX,
         signature
@@ -202,6 +266,7 @@ export class OracleService {
 
   /**
    * Listen for payment verification events
+   * Note: Disabled for Citrea testnet due to eth_newFilter not being supported
    */
   async listenForPaymentEvents(callback: (event: any) => void): Promise<void> {
     if (!this.oracleContract) {
@@ -212,38 +277,14 @@ export class OracleService {
     }
 
     try {
-      // Listen for PaymentVerified events
-      this.oracleContract.on(
-        "PaymentVerified",
-        (paymentHash, verifier, amount, timestamp, event) => {
-          callback({
-            type: "PaymentVerified",
-            paymentHash,
-            verifier,
-            amount: Number(amount),
-            timestamp: Number(timestamp),
-            transactionHash: event.transactionHash,
-          });
-        }
+      console.log(
+        "⚠️  Event listening disabled for Citrea testnet - using polling instead"
       );
-
-      // Listen for PaymentRejected events
-      this.oracleContract.on(
-        "PaymentRejected",
-        (paymentHash, reason, event) => {
-          callback({
-            type: "PaymentRejected",
-            paymentHash,
-            reason,
-            transactionHash: event.transactionHash,
-          });
-        }
-      );
-
-      console.log("👂 Listening for payment verification events");
+      // Note: Event listening is disabled because Citrea testnet doesn't support eth_newFilter
+      // We'll use polling-based verification instead
     } catch (error) {
       console.error("Failed to set up event listeners:", error);
-      throw error;
+      // Don't throw error, just log it since we're not using event listeners
     }
   }
 
@@ -316,6 +357,130 @@ export class OracleService {
     } catch (error) {
       console.error("Failed to get wallet balance:", error);
       return "0";
+    }
+  }
+
+  /**
+   * Get token balance for a user
+   */
+  async getTokenBalance(userAddress: string): Promise<number> {
+    if (!this.tokenContract) {
+      throw new Error("Token contract not initialized");
+    }
+    try {
+      const balance = await this.tokenContract.balanceOf(userAddress);
+      return Number(balance.toString());
+    } catch (error) {
+      console.error("Failed to get token balance:", error);
+      return 0;
+    }
+  }
+
+  /**
+   * Get total token supply
+   */
+  async getTotalTokenSupply(): Promise<number> {
+    if (!this.tokenContract) {
+      throw new Error("Token contract not initialized");
+    }
+    try {
+      const supply = await this.tokenContract.totalSupply();
+      return Number(supply.toString());
+    } catch (error) {
+      console.error("Failed to get total supply:", error);
+      return 0;
+    }
+  }
+
+  /**
+   * Get DeFi contract balance for a user
+   */
+  async getDeFiBalance(userAddress: string): Promise<number> {
+    if (!this.defiContract) {
+      throw new Error("DeFi contract not initialized");
+    }
+    try {
+      const balance = await this.defiContract.getBalance(userAddress);
+      return Number(balance.toString());
+    } catch (error) {
+      console.error("Failed to get DeFi balance:", error);
+      return 0;
+    }
+  }
+
+  /**
+   * Check if payment has been processed in DeFi contract
+   */
+  async isPaymentProcessed(paymentHash: string): Promise<boolean> {
+    if (!this.defiContract) {
+      throw new Error("DeFi contract not initialized");
+    }
+    try {
+      return await this.defiContract.isPaymentProcessed(paymentHash);
+    } catch (error) {
+      console.error("Failed to check payment processing status:", error);
+      return false;
+    }
+  }
+
+  /**
+   * Get contract information
+   */
+  async getContractInfo(): Promise<{
+    oracle: string | null;
+    defi: string | null;
+    token: string | null;
+    connected: boolean;
+  }> {
+    return {
+      oracle: this.oracleContract?.target?.toString() || null,
+      defi: this.defiContract?.target?.toString() || null,
+      token: this.tokenContract?.target?.toString() || null,
+      connected: this.isConnectedFlag,
+    };
+  }
+
+  /**
+   * Emergency verify payment (for testing)
+   */
+  async emergencyVerifyPayment(
+    paymentHash: string,
+    amount: number
+  ): Promise<{
+    isValid: boolean;
+    paymentHash: string;
+    amount: number;
+    error?: string;
+  }> {
+    if (!this.oracleContract) {
+      return {
+        isValid: false,
+        paymentHash,
+        amount,
+        error: "Oracle contract not initialized",
+      };
+    }
+
+    try {
+      const tx = await this.oracleContract.emergencyVerifyPayment(
+        paymentHash,
+        amount
+      );
+      await tx.wait();
+
+      return {
+        isValid: true,
+        paymentHash,
+        amount,
+      };
+    } catch (error) {
+      console.error("Emergency verification failed:", error);
+      return {
+        isValid: false,
+        paymentHash,
+        amount,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
     }
   }
 }

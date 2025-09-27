@@ -73,8 +73,9 @@ contract LightningOracle {
         // Validate signature length
         require(signature.length == SIGNATURE_LENGTH, "Invalid signature length");
         
-        // Create the message that was signed
-        bytes32 message = keccak256(abi.encodePacked(
+        // Create the message that was signed (matching frontend format)
+        // Frontend signs: "lightning_payment:${paymentHash}:${preimage}:${amount}:${timestamp}"
+        string memory messageString = string(abi.encodePacked(
             "lightning_payment:",
             paymentHash,
             ":",
@@ -84,6 +85,9 @@ contract LightningOracle {
             ":",
             block.timestamp
         ));
+        
+        // Hash the message with SHA-256 to match what the frontend signs
+        bytes32 message = sha256(abi.encodePacked(messageString));
         
         // Verify Schnorr signature using Citrea's precompile
         // This calls the secp256k1 precompile for Schnorr verification

@@ -10,12 +10,16 @@ class App {
     this.oracleManager = new OracleManager();
     this.uiManager = new UIManager();
     this.currentSwap = null; // Store current swap context
+    this.monitoringIntervals = new Set(); // Track monitoring intervals
 
     this.init();
   }
 
   async init() {
     try {
+      // Clear any existing monitoring intervals
+      this.clearAllMonitoring();
+
       // Initialize UI
       this.uiManager.init();
 
@@ -170,6 +174,20 @@ class App {
     try {
       const status = await this.oracleManager.getStatus();
       this.uiManager.updateOracleStatus(status);
+
+      // Load contract information
+      const contractInfo = await this.oracleManager.loadContractInfo();
+      if (contractInfo) {
+        this.uiManager.updateContractInfo(contractInfo);
+      }
+
+      // Load token information (using wallet address if available)
+      const tokenInfo = await this.oracleManager.loadTokenInfo(
+        status.walletAddress
+      );
+      if (tokenInfo) {
+        this.uiManager.updateTokenInfo(tokenInfo);
+      }
     } catch (error) {
       console.error("Failed to load oracle status:", error);
     }
@@ -223,6 +241,9 @@ class App {
         amount: swap.amount,
         id: swap.id,
       });
+
+      // Clear any existing monitoring intervals when starting a new swap
+      this.clearAllMonitoring();
 
       // Store current swap context
       this.currentSwap = swap;
@@ -300,6 +321,17 @@ class App {
     }
   }
 
+  /**
+   * Clear all monitoring intervals
+   */
+  clearAllMonitoring() {
+    this.monitoringIntervals.forEach((interval) => {
+      clearInterval(interval);
+    });
+    this.monitoringIntervals.clear();
+    console.log("🧹 Cleared all payment monitoring intervals");
+  }
+
   async monitorPayment(swapId, invoice) {
     console.log("🔍 Starting payment monitoring for LNURL payment...");
     this.uiManager.updatePaymentStatus(
@@ -319,6 +351,7 @@ class App {
             "✅ Payment confirmed! Processing swap..."
           );
           clearInterval(checkInterval);
+          this.monitoringIntervals.delete(checkInterval);
 
           // Get preimage
           const preimage = await this.lightningClient.getPaymentPreimage(
@@ -374,8 +407,17 @@ class App {
                   "success"
                 );
 
-                // Refresh swap list
+                // Refresh swap list and token information
                 await this.loadSwaps();
+
+                // Refresh token information to show new balance
+                const status = await this.oracleManager.getStatus();
+                const tokenInfo = await this.oracleManager.loadTokenInfo(
+                  status.walletAddress
+                );
+                if (tokenInfo) {
+                  this.uiManager.updateTokenInfo(tokenInfo);
+                }
 
                 // Close the modal after a delay
                 setTimeout(() => {
@@ -414,10 +456,14 @@ class App {
       }
     }, 5000); // Check every 5 seconds for LNURL payments
 
+    // Track the interval
+    this.monitoringIntervals.add(checkInterval);
+
     // Stop monitoring after 10 minutes for LNURL payments
     setTimeout(() => {
       console.log("⏰ Payment monitoring timeout - stopping checks");
       clearInterval(checkInterval);
+      this.monitoringIntervals.delete(checkInterval);
     }, 600000); // 10 minutes total
   }
 
@@ -568,8 +614,17 @@ class App {
           );
           this.uiManager.showToast("Swap completed successfully!", "success");
 
-          // Refresh swap list
+          // Refresh swap list and token information
           await this.loadSwaps();
+
+          // Refresh token information to show new balance
+          const status = await this.oracleManager.getStatus();
+          const tokenInfo = await this.oracleManager.loadTokenInfo(
+            status.walletAddress
+          );
+          if (tokenInfo) {
+            this.uiManager.updateTokenInfo(tokenInfo);
+          }
 
           // Close the modal after a delay
           setTimeout(() => {
