@@ -262,5 +262,36 @@ export function lightningRoutes(lightningService: LightningService) {
     }
   });
 
+  /**
+   * GET /api/lightning/private-key/:address
+   * Get the private key for a Lightning address (for testing purposes)
+   */
+  router.get("/private-key/:address", async (req, res) => {
+    try {
+      const { address } = req.params;
+
+      if (!address) {
+        return res.status(400).json({ error: "Address is required" });
+      }
+
+      const privateKey = lightningService.getPrivateKey(address);
+
+      if (!privateKey) {
+        return res
+          .status(404)
+          .json({ error: "Private key not found for address" });
+      }
+
+      // Convert Uint8Array to hex string with 0x prefix
+      const privateKeyHex = "0x" + Buffer.from(privateKey).toString("hex");
+
+      res.json({ privateKey: privateKeyHex });
+    } catch (error) {
+      res.status(400).json({
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
   return router;
 }

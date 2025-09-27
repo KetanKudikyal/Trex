@@ -12,11 +12,19 @@ export function oraclePrivateRoutes(
    */
   router.post("/verify", async (req, res) => {
     try {
-      const { msgHash, publicKeyX, signature, userAddress } = req.body;
+      const { msgHash, publicKeyX, signature, userAddress, invoiceAmount } =
+        req.body;
 
-      if (!msgHash || !publicKeyX || !signature) {
+      if (
+        !msgHash ||
+        !publicKeyX ||
+        !signature ||
+        !userAddress ||
+        !invoiceAmount
+      ) {
         return res.status(400).json({
-          error: "msgHash, publicKeyX, and signature are required",
+          error:
+            "msgHash, publicKeyX, signature, userAddress, and invoiceAmount are required",
         });
       }
 
@@ -25,6 +33,7 @@ export function oraclePrivateRoutes(
         publicKeyX,
         signature,
         userAddress,
+        invoiceAmount,
       });
 
       res.json(result);
@@ -41,17 +50,19 @@ export function oraclePrivateRoutes(
    */
   router.post("/create-msg-hash", async (req, res) => {
     try {
-      const { paymentHash, preimage, userAddress, timestamp } = req.body;
+      const { paymentHash, preimage, amount, userAddress, timestamp } =
+        req.body;
 
-      if (!paymentHash || !preimage) {
+      if (!paymentHash || !preimage || !amount) {
         return res.status(400).json({
-          error: "paymentHash and preimage are required",
+          error: "paymentHash, preimage, and amount are required",
         });
       }
 
       const msgHash = OracleServicePrivate.createPrivateMessageHash(
         paymentHash,
         preimage,
+        amount,
         userAddress,
         timestamp
       );
@@ -279,17 +290,20 @@ export function oraclePrivateRoutes(
    */
   router.post("/emergency-verify", async (req, res) => {
     try {
-      const { msgHash, publicKeyX } = req.body;
+      const { msgHash, publicKeyX, userAddress, invoiceAmount } = req.body;
 
-      if (!msgHash || !publicKeyX) {
+      if (!msgHash || !publicKeyX || !userAddress || !invoiceAmount) {
         return res.status(400).json({
-          error: "msgHash and publicKeyX are required",
+          error:
+            "msgHash, publicKeyX, userAddress, and invoiceAmount are required",
         });
       }
 
       const result = await oracleServicePrivate.emergencyVerifyMessage(
         msgHash,
-        publicKeyX
+        publicKeyX,
+        userAddress,
+        invoiceAmount
       );
 
       res.json({
@@ -318,6 +332,10 @@ export function oraclePrivateRoutes(
         connected: isConnected,
         contracts: addresses,
         timestamp: Date.now(),
+        // Additional fields for UI compatibility
+        blockHeight: null, // Not available for private oracle
+        walletBalance: null, // Not available for private oracle
+        walletAddress: null, // Not available for private oracle
       });
     } catch (error) {
       res.status(400).json({
