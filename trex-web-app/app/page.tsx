@@ -6,13 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useConnectModal } from '@rainbow-me/rainbowkit'
 import { Bolt, Coins, Shield } from 'lucide-react'
-import { useAccount } from 'wagmi'
 
 export default function Home() {
-  const { openConnectModal } = useConnectModal()
-  const { address } = useAccount()
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}

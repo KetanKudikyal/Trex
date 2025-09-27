@@ -25,7 +25,6 @@ export default function Home() {
         <p className="text-2xl text-white leading-relaxed">
           Exchange Lightning Network payments for Citrea tokens using
           <span className="text-yellow-300 font-semibold">
-            {' '}
             Schnorr signatures
           </span>
         </p>

@@ -183,6 +183,7 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
         paymentRequest: newInvoice.paymentRequest,
       })
     } catch (error) {
+      console.error('error', error)
       setActiveSwap(null)
     }
   }

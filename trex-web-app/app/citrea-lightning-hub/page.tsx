@@ -17,7 +17,6 @@ export default function Home() {
   const { address } = useAccount()
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Hero Section */}
       <div className="text-center space-y-8 max-w-4xl mx-auto mb-24">
         <h1 className="text-7xl font-extrabold tracking-tight text-white">
           Scriptless Atomic Swaps
@@ -25,7 +24,6 @@ export default function Home() {
         <p className="text-2xl text-white leading-relaxed">
           Exchange Lightning Network payments for Citrea tokens using
           <span className="text-yellow-300 font-semibold">
-            {' '}
             Schnorr signatures
           </span>
         </p>
@@ -81,8 +79,6 @@ export default function Home() {
           </CardHeader>
         </Card>
       </div>
-
-      {/* Statistics Section */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         {[
           { title: 'TOTAL SWAPS', value: '0' },

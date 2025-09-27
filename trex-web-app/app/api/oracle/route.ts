@@ -12,6 +12,7 @@ export const POST = async (req: Request) => {
     const result = await oracleService.verifyPaymentProof(proof)
     return NextResponse.json(result)
   } catch (error) {
+    console.error('error', error)
     return NextResponse.json(
       { error: 'Failed to create payment proof' },
       { status: 500 }

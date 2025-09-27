@@ -14,7 +14,7 @@ interface Swap {
 }
 
 export default function SwapsSection() {
-  const [swaps, setSwaps] = useState<Swap[]>([])
+  const [swaps, _setSwaps] = useState<Swap[]>([])
 
   const handleRefresh = () => {
     // TODO: Implement refresh logic
