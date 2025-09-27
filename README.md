@@ -1,8 +1,8 @@
-# Trex Protocol
+# T-REX Protocol
 
 **Mining Lightning Liquidity for ZKRollup EVM (Citrea) Node Hubs**
 
-Trex is a revolutionary protocol that enables secure, private, and gas-efficient cross-chain liquidity mining between the Lightning Network and Citrea EVM ZkRollups. The protocol incentivizes users to provide Lightning Network liquidity to Citrea node hubs, creating a symbiotic relationship between Lightning routing and DeFi rewards.
+T-REX is a revolutionary protocol that enables secure, private, and gas-efficient cross-chain liquidity mining between the Lightning Network and Citrea EVM ZkRollups. The protocol incentivizes users to provide Lightning Network liquidity to Citrea node hubs, creating a symbiotic relationship between Lightning routing and DeFi rewards.
 
 ## 🎯 Core Concept
 
@@ -29,7 +29,7 @@ The Trex protocol revolves around **mining liquidity** from the Lightning Networ
 
 ## 🔒 Privacy-First Approach
 
-Trex implements **Schnorr-Private-2.0**, a privacy-preserving approach that:
+T-REX implements **Schnorr-Private-2.0**, a privacy-preserving approach that:
 
 - **Keeps Lightning invoice details off-chain**: No preimage or payment hash exposure
 - **Uses arbitrary message hashes**: Computed privately from payment details
@@ -222,8 +222,8 @@ forge script script/DeployTrexContracts.s.sol --rpc-url anvil --broadcast
 
 ## 🏆 Vision
 
-Trex envisions a future where Lightning Network liquidity seamlessly flows into DeFi ecosystems, creating a robust, private, and incentive-aligned bridge between Bitcoin's Lightning Network and Citrea's DeFi infrastructure. By mining liquidity from Lightning to Citrea node hubs, we're building the foundation for a truly decentralized and efficient Bitcoin-DeFi economy.
+T-REX envisions a future where Lightning Network liquidity seamlessly flows into DeFi ecosystems, creating a robust, private, and incentive-aligned bridge between Bitcoin's Lightning Network and Citrea's DeFi infrastructure. By mining liquidity from Lightning to Citrea node hubs, we're building the foundation for a truly decentralized and efficient Bitcoin-DeFi economy.
 
 ---
 
-**Trex Protocol** - Mining Lightning Liquidity for a Better DeFi Future ⚡🔗
+**T-REX Protocol** - Mining Lightning Liquidity for a Better DeFi Future ⚡🔗
