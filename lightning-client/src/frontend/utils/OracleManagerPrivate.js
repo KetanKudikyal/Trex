@@ -23,18 +23,28 @@ export class OracleManagerPrivate {
   async createPrivateMessageHash(
     paymentHash,
     preimage,
+    amount,
     userAddress = null,
     timestamp = null
   ) {
     try {
+      // Ensure hex values have 0x prefix for Ethereum compatibility
+      const formattedPaymentHash = paymentHash.startsWith("0x")
+        ? paymentHash
+        : `0x${paymentHash}`;
+      const formattedPreimage = preimage.startsWith("0x")
+        ? preimage
+        : `0x${preimage}`;
+
       const response = await fetch(`${this.baseUrl}/create-msg-hash`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          paymentHash,
-          preimage,
+          paymentHash: formattedPaymentHash,
+          preimage: formattedPreimage,
+          amount,
           userAddress,
           timestamp,
         }),
@@ -91,7 +101,7 @@ export class OracleManagerPrivate {
    * @param {string} proof.msgHash - Private message hash
    * @param {string} proof.publicKeyX - Public key X coordinate
    * @param {string} proof.signature - Schnorr signature
-   * @param {string} proof.userAddress - User's address (optional)
+   * @param {string} proof.userAddress - User's address (required for rewards)
    * @returns {Promise<Object>} Verification result
    */
   async verifyPaymentProof(proof) {
@@ -136,6 +146,7 @@ export class OracleManagerPrivate {
       const msgHash = await this.createPrivateMessageHash(
         params.paymentHash,
         params.preimage,
+        params.invoiceAmount,
         params.userAddress
       );
       console.log("Private message hash created:", msgHash);
@@ -150,11 +161,25 @@ export class OracleManagerPrivate {
 
       // Step 3: Verify payment proof
       console.log("Step 3: Verifying payment proof...");
+      console.log(
+        "🔐 OracleManagerPrivate - Parameters being sent to backend:"
+      );
+      console.log("🔐 msgHash:", msgHash);
+      console.log("🔐 publicKeyX:", params.publicKeyX);
+      console.log(
+        "🔐 publicKeyX length:",
+        params.publicKeyX ? params.publicKeyX.length : "undefined"
+      );
+      console.log("🔐 signature:", signature);
+      console.log("🔐 userAddress:", params.userAddress);
+      console.log("🔐 invoiceAmount:", params.invoiceAmount);
+
       const verificationResult = await this.verifyPaymentProof({
         msgHash,
         publicKeyX: params.publicKeyX,
         signature,
         userAddress: params.userAddress,
+        invoiceAmount: params.invoiceAmount,
       });
 
       console.log("Complete private verification flow successful!");
@@ -377,9 +402,16 @@ export class OracleManagerPrivate {
    * Emergency function to verify a message (for testing only)
    * @param {string} msgHash - Message hash
    * @param {string} publicKeyX - Public key X coordinate
+   * @param {string} userAddress - User address
+   * @param {string} invoiceAmount - Invoice amount
    * @returns {Promise<Object>} Emergency verification result
    */
-  async emergencyVerifyMessage(msgHash, publicKeyX) {
+  async emergencyVerifyMessage(
+    msgHash,
+    publicKeyX,
+    userAddress,
+    invoiceAmount
+  ) {
     try {
       const response = await fetch(`${this.baseUrl}/emergency-verify`, {
         method: "POST",
@@ -389,6 +421,8 @@ export class OracleManagerPrivate {
         body: JSON.stringify({
           msgHash,
           publicKeyX,
+          userAddress,
+          invoiceAmount,
         }),
       });
 
@@ -401,6 +435,55 @@ export class OracleManagerPrivate {
       return data;
     } catch (error) {
       console.error("Error in emergency message verification:", error);
+      throw error;
+    }
+  }
+
+  // Compatibility methods for main.js integration
+
+  /**
+   * Initialize the oracle manager (compatibility method)
+   * @returns {Promise<void>}
+   */
+  async init() {
+    // No initialization needed for private oracle
+    console.log("OracleManagerPrivate initialized");
+  }
+
+  /**
+   * Get oracle status (compatibility method)
+   * @returns {Promise<Object>} Oracle status
+   */
+  async getStatus() {
+    return await this.getServiceStatus();
+  }
+
+  /**
+   * Load contract info (compatibility method)
+   * @returns {Promise<Object>} Contract information
+   */
+  async loadContractInfo() {
+    return await this.getContractAddresses();
+  }
+
+  /**
+   * Load token info (compatibility method)
+   * @param {string} userAddress - User address (optional)
+   * @returns {Promise<Object>} Token information
+   */
+  async loadTokenInfo(userAddress = null) {
+    try {
+      const contracts = await this.getContractAddresses();
+      const stats = await this.getProtocolStats();
+
+      return {
+        contracts,
+        stats,
+        userAddress:
+          userAddress || "0x0000000000000000000000000000000000000000",
+      };
+    } catch (error) {
+      console.error("Error loading token info:", error);
       throw error;
     }
   }
