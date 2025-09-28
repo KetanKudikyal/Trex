@@ -43,6 +43,13 @@ export type Payment = {
 
 export const columns: ColumnDef<Payment>[] = [
   {
+    accessorKey: 'id',
+    header: ({ column }) => {
+      return <div>N/o</div>
+    },
+    cell: ({ row, getValue }) => <div>{getValue() as string}</div>,
+  },
+  {
     accessorKey: 'description',
     header: ({ column }) => {
       return (

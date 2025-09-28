@@ -6,11 +6,11 @@ export const POST = async (req: Request) => {
     const { amount, userAddress, shonurrIndex } = await req.json()
     const oracleServicePrivate = new OracleServicePrivate()
 
-    const result = await oracleServicePrivate.emergencyVerifyMessage(
+    const result = await oracleServicePrivate.emergencyVerifyMessage({
+      shonurrIndex,
       userAddress,
-      amount.toString(),
-      shonurrIndex
-    )
+      invoiceAmount: amount.toString(),
+    })
 
     return NextResponse.json(result)
   } catch (error) {

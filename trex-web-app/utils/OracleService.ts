@@ -479,11 +479,15 @@ export class OracleServicePrivate {
    * @param msgHash Message hash to verify
    * @param publicKeyX Public key X coordinate
    */
-  async emergencyVerifyMessage(
-    shonurrIndex: string,
-    userAddress: string,
+  async emergencyVerifyMessage({
+    shonurrIndex,
+    userAddress,
+    invoiceAmount,
+  }: {
+    shonurrIndex: string
+    userAddress: string
     invoiceAmount: string
-  ): Promise<CitreaTransaction> {
+  }): Promise<CitreaTransaction> {
     if (!this.isConnected() || !this.oracleContract) {
       throw new Error('Oracle service not connected')
     }
@@ -494,6 +498,7 @@ export class OracleServicePrivate {
           Number(shonurrIndex) as keyof typeof schnorrTestConfigs
         ]
 
+      console.log(shonurrIndex, txArgs)
       if (!txArgs) {
         throw new Error('Shonurr index not found')
       }
