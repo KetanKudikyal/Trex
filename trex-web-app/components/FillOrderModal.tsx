@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import useSwapStateStore, { ActiveSwap } from '@/store'
-import { Check } from 'lucide-react'
+import { Check, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
 import * as React from 'react'
@@ -239,7 +239,9 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
         <DialogHeader>
           <DialogTitle>Fill Order</DialogTitle>
           <DialogDescription>
-            Please scan the QR code to fill the order.
+            {isLoading
+              ? 'Processing your payment...'
+              : 'Scan the QR code or click the button below to fill the order.'}
           </DialogDescription>
         </DialogHeader>
         <div className="flex justify-center mx-auto items-center">
@@ -248,6 +250,15 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
               <div className="h-[200px] w-[200px] flex items-center justify-center bg-green-100/10 rounded-lg">
                 <Check className="h-24 w-24 text-green-500" />
               </div>
+            </div>
+          ) : isLoading ? (
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-[200px] w-[200px] flex items-center justify-center bg-gradient-to-br from-blue-50/20 to-purple-50/20 rounded-lg border border-white/10">
+                <Loader2 className="h-8 w-8 text-white animate-spin" />
+              </div>
+              <p className="text-sm text-muted-foreground text-center">
+                Processing payment...
+              </p>
             </div>
           ) : (
             <QRCodeCanvas size={200} level="M" value={payment.paymentRequest} />
