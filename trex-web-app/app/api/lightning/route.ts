@@ -1,5 +1,6 @@
 import { SchnorrUtils } from '@/utils/schnorr'
 import { kv } from '@vercel/kv'
+import { ethers } from 'ethers'
 import { NextResponse } from 'next/server'
 
 export const POST = async (req: Request) => {
@@ -11,7 +12,7 @@ export const POST = async (req: Request) => {
       amount,
       lightningAddress,
     })
-
+    await kv.del(lightningAddress)
     if (!paymentHash || !preimage || !amount || !lightningAddress) {
       console.log('❌ Missing required parameters:', {
         hasPaymentHash: !!paymentHash,
@@ -65,6 +66,13 @@ export const POST = async (req: Request) => {
       )
     }
 
+    console.log('🔐 Creating payment proof with parameters:', {
+      paymentHash,
+      preimage,
+      amount,
+      privateKeyLength: privateKey.length,
+    })
+
     const proof = SchnorrUtils.createPaymentProof(
       paymentHash,
       preimage,
@@ -72,7 +80,23 @@ export const POST = async (req: Request) => {
       privateKey
     )
 
-    return NextResponse.json(proof)
+    console.log('🔐 Payment proof created successfully:', {
+      hasSignature: !!proof.signature,
+      hasPublicKey: !!proof.publicKey,
+      timestamp: proof.timestamp,
+    })
+
+    const publicKeyX = proof.publicKey.slice(2, 66)
+    const publicKeyXWithPrefix = `0x${publicKeyX}`
+    const timestamp = Math.floor(Date.now() / 1000)
+    const message = `lightning_payment:${paymentHash}:${preimage}:${amount}:${timestamp}`
+    const msgHash = ethers.keccak256(ethers.toUtf8Bytes(message))
+
+    return NextResponse.json({
+      proof,
+      publicKeyXWithPrefix,
+      msgHash,
+    })
   } catch (error) {
     console.log('error', error)
     return NextResponse.json(

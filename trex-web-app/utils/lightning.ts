@@ -1,7 +1,7 @@
 import { Invoice, LightningAddress } from '@getalby/lightning-tools'
 import * as crypto from 'crypto'
 import { LightningAddressData, LightningInvoice } from '../types/index'
-import { WebLNUtils } from './webln.js'
+import { WebLNUtils } from './webln'
 
 /**
  * Lightning Network utilities using @getalby/lightning-tools

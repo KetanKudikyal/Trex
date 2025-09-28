@@ -20,6 +20,11 @@
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "../frontend-react"],
+  "include": [
+    "src/**/*",
+    "../frontend-react",
+    "../trex-web-app/config",
+    "../trex-web-app/utils/contracts.ts"
+  ],
   "exclude": ["node_modules", "dist"]
 }

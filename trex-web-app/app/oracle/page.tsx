@@ -1,5 +1,4 @@
 'use client'
-import InvoiceModal from '@/components/InvoiceModal'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -30,12 +29,10 @@ export default function Home() {
         </p>
 
         <div className="flex gap-6 z-50 relative justify-center pt-8">
-          <InvoiceModal>
-            <Button size="lg" variant="outline">
-              Create Swap
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </InvoiceModal>
+          <Button size="lg" variant="outline">
+            Create Swap
+            <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
           {!address && (
             <Button size="lg" onClick={openConnectModal}>
               Connect Wallet

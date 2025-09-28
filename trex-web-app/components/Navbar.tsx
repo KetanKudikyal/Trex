@@ -32,30 +32,6 @@ const Navbar = () => {
             Invoices
           </Button>
         </Link>
-        <Link href="/oracle">
-          <Button
-            variant="ghost"
-            className={`hover:bg-transparent ${
-              pathname === '/oracle'
-                ? 'text-yellow-400'
-                : 'text-white hover:text-gray-300'
-            }`}
-          >
-            Oracle
-          </Button>
-        </Link>
-        <Link href="/settings">
-          <Button
-            variant="ghost"
-            className={`hover:bg-transparent ${
-              pathname === '/settings'
-                ? 'text-yellow-400'
-                : 'text-white hover:text-gray-300'
-            }`}
-          >
-            Settings
-          </Button>
-        </Link>
       </nav>
       <ConnectButton />
     </div>

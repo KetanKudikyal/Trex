@@ -12,10 +12,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import useSwapStateStore, { ActiveSwap } from '@/store'
-import { PaymentProof } from '@/types'
 import { Check, Coins, Copy, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { toast } from 'sonner'
+import { useAccount } from 'wagmi'
 
 interface SwapModalProps {
   children: React.ReactNode
@@ -47,6 +48,7 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  const { address } = useAccount()
   async function createPaymentProof({
     paymentHash,
     preimage,
@@ -85,7 +87,29 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
     }
   }
 
-  async function verifyPaymentProof(proof: PaymentProof) {
+  async function verifyPaymentProof({
+    paymentHash,
+    preimage,
+    signature,
+    publicKey,
+    timestamp,
+    amount,
+    publicKeyXWithPrefix,
+    msgHash,
+    userAddress,
+    lightningAddress,
+  }: {
+    paymentHash: string
+    preimage: string
+    signature: string
+    publicKey: string
+    timestamp: number
+    amount: string
+    publicKeyXWithPrefix: string
+    msgHash: string
+    userAddress: string
+    lightningAddress: string
+  }) {
     try {
       const response = await fetch(`/api/oracle`, {
         method: 'POST',
@@ -93,7 +117,16 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          proof,
+          paymentHash,
+          preimage,
+          signature,
+          publicKey,
+          timestamp,
+          amount,
+          lightningAddress,
+          publicKeyXWithPrefix,
+          msgHash,
+          userAddress,
         }),
       })
 
@@ -134,6 +167,10 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
         throw new Error('No amount received from payment')
       }
 
+      if (!address) {
+        throw new Error('No address received from payment')
+      }
+
       setOperationState('creating-proof')
       const paymentProof = await createPaymentProof({
         paymentHash: paymentHash,
@@ -143,12 +180,23 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
       })
 
       setOperationState('verifying-proof')
-      const verificationResult = await verifyPaymentProof(paymentProof)
+      const verificationResult = await verifyPaymentProof({
+        paymentHash: paymentHash,
+        preimage: preimage,
+        signature: paymentProof.signature,
+        publicKey: paymentProof.publicKey,
+        timestamp: paymentProof.timestamp,
+        amount: swap.amount,
+        publicKeyXWithPrefix: paymentProof.publicKeyXWithPrefix,
+        msgHash: paymentProof.msgHash,
+        userAddress: address!,
+        lightningAddress: swap.lightningAddress,
+      })
       if (!verificationResult.success) {
         throw new Error('Payment proof verification failed')
       }
-      if (verificationResult.txHash) {
-        setTransactionHash(verificationResult.txHash)
+      if (verificationResult.hash) {
+        setTransactionHash(verificationResult.hash)
       }
       setOperationState('success')
     } catch (error) {
@@ -159,7 +207,10 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
 
   const handleSwap = async () => {
     try {
-      if (!window.webln) return
+      if (!window.webln) {
+        toast.error('WebLN is not enabled')
+        return
+      }
       await window.webln.enable()
 
       const generateSwapId = (): string => {
@@ -269,7 +320,7 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
                     background:
                       'linear-gradient(to left, rgba(250, 176, 5, 0.8) 0%, rgba(234, 86, 40, 0.8) 100%)',
                   }}
-                  className="flex-1 "
+                  className="flex-1 relative z-50"
                   disabled={!lightningAddress || !amount}
                 >
                   <Coins className="h-4 w-4 mr-2" />
@@ -385,7 +436,7 @@ export default function CreateSwapModal({ children }: SwapModalProps) {
                           </div>
                           {txHash !== '-' ? (
                             <Link
-                              href={`https://explorer.citrea.xyz/tx/${txHash}`}
+                              href={`https://explorer.testnet.citrea.xyz/tx/${txHash}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs break-all text-blue-500 hover:text-blue-600 underline"

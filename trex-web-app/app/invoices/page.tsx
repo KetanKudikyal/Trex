@@ -172,6 +172,7 @@ function DataTableDemo() {
 
   return (
     <div className="w-full max-w-5xl mx-auto">
+      <h1 className="mb-2  font-bold text-[40px]">Available Invoices</h1>
       <div className="overflow-hidden rounded-md border">
         <Table>
           <TableHeader>
