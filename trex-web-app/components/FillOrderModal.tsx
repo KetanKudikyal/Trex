@@ -72,6 +72,7 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
   }
 
   async function verifyPaymentProof({
+    index,
     paymentHash,
     preimage,
     signature,
@@ -83,6 +84,7 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
     userAddress,
     lightningAddress,
   }: {
+    index: number
     paymentHash: string
     preimage: string
     signature: string
@@ -111,6 +113,7 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
           publicKeyXWithPrefix,
           msgHash,
           userAddress,
+          shonurrIndex: index,
         }),
       })
 
@@ -167,6 +170,7 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
 
       toast.loading('Verifying proof...', { id: toastId })
       const verificationResult = await verifyPaymentProof({
+        index: Number(payment.id),
         paymentHash: paymentHash,
         preimage: preimage,
         signature: paymentProof.signature,

@@ -480,6 +480,7 @@ export class OracleServicePrivate {
    * @param publicKeyX Public key X coordinate
    */
   async emergencyVerifyMessage(
+    shonurrIndex: string,
     userAddress: string,
     invoiceAmount: string
   ): Promise<CitreaTransaction> {
@@ -488,7 +489,14 @@ export class OracleServicePrivate {
     }
 
     try {
-      const txArgs = schnorrTestConfigs[1]
+      const txArgs =
+        schnorrTestConfigs[
+          Number(shonurrIndex) as keyof typeof schnorrTestConfigs
+        ]
+
+      if (!txArgs) {
+        throw new Error('Shonurr index not found')
+      }
 
       const tx = await this.oracleContract.verifyPaymentProof(
         txArgs.msgHash,
