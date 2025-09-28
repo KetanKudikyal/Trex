@@ -137,9 +137,8 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
       return
     }
 
+    const toastId = toast.loading('Enabling WebLN...')
     try {
-      const toastId = toast.loading('Enabling WebLN...')
-
       toast.loading('Processing payment...', { id: toastId })
       const paymentResult = await window.webln.sendPayment(swap.paymentRequest)
       setPreimage(paymentResult.preimage)
@@ -191,6 +190,7 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
 
       toast.success('Payment completed successfully!', { id: toastId })
     } catch (error) {
+      toast.dismiss(toastId)
       console.error('Payment failed:', error)
       toast.error(error instanceof Error ? error.message : 'Payment failed')
     }
