@@ -2,7 +2,54 @@
 
 **Mining Lightning Liquidity for ZKRollup EVM (Citrea) Node Hubs**
 
-T-REX is a revolutionary protocol that enables secure, private, and gas-efficient cross-chain liquidity mining between the Lightning Network and Citrea EVM ZkRollups. The protocol incentivizes users to provide Lightning Network liquidity to Citrea node hubs, creating a symbiotic relationship between Lightning routing and DeFi rewards.
+T-REX protocol enables secure, private, and gas-efficient cross-chain liquidity mining between the Lightning Network and Citrea EVM ZkRollups. The protocol incentivizes users to provide Lightning Network liquidity to Citrea node hubs, creating a symbiotic relationship between Lightning routing and DeFi rewards.
+
+**✅ Success Transaction - verifyPaymentProof (Schnorr Signatures):**
+
+<img width="2504" height="1614" alt="image" src="https://github.com/user-attachments/assets/55b8805b-3971-4da3-ae69-0bd18a612a85" />
+
+
+**Schnorr Signature Verification for Trustless HTLC Swaps using Precompile 0x200:**
+
+- **Transaction Hash**: [`0x80e956cd2ec4a831688526eb0ef3d0956684b9dc9a2a333f3574ab27b69ef3ca`](https://explorer.testnet.citrea.xyz/tx/0x80e956cd2ec4a831688526eb0ef3d0956684b9dc9a2a333f3574ab27b69ef3ca) 
+- **Method**: `verifyPaymentProof`
+- **Contract**: `LightningOraclePrivate`
+- **Precompile Used**: `0x0200` (Schnorr Signature Verification)
+- **Tokens Minted**: `0.0000000000000001 TREX` (2 separate mints)
+- **Block**: `16112252` | **Confirmations**: `788+`
+- **Timestamp**: `Sep 28 2025 07:54:48 AM (+05:30 UTC)`
+
+This transaction demonstrates the successful implementation of **trustless HTLC swaps** using Citrea's native Schnorr signature precompile, enabling privacy-preserving Lightning Network payment verification without exposing sensitive payment details on-chain.
+
+
+## 🚀 Deployment
+
+### Citrea Testnet (Live)
+
+**✅ Deployed and Verified on Citrea Testnet (Chain ID: 5115):**
+
+**Core Contracts:**
+
+- **TrexToken**: [`0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E`](https://explorer.testnet.citrea.xyz/address/0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E) ✅ Verified (Sourcify + Blockscout)
+- **LightningOraclePrivate**: [`0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a`](https://explorer.testnet.citrea.xyz/address/0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a) ✅ Verified (Sourcify + Blockscout)
+- **DeFiContractPrivate**: [`0x90e97EF730B28B14b3F5f9214f47312796b6c10e`](https://explorer.testnet.citrea.xyz/address/0x90e97EF730B28B14b3F5f9214f47312796b6c10e) ✅ Verified (Sourcify + Blockscout)
+
+**Legacy Contracts:**
+
+- **LightningOracle**: [`0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E`](https://explorer.testnet.citrea.xyz/address/0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E) ✅ Verified (Sourcify + Blockscout)
+- **DeFiContract**: [`0x9d24c52916A14afc31D86B5Aa046b252383ee444`](https://explorer.testnet.citrea.xyz/address/0x9d24c52916A14afc31D86B5Aa046b252383ee444) ✅ Verified (Sourcify + Blockscout)
+
+**Network Details:**
+
+- **RPC URL**: `https://rpc.testnet.citrea.xyz`
+- **Explorer**: `https://explorer.testnet.citrea.xyz`
+
+### Local Development
+
+```bash
+cd trex-contracts
+forge script script/DeployTrexContracts.s.sol --rpc-url anvil --broadcast
+```
 
 ## 🎯 Core Concept
 
@@ -185,34 +232,6 @@ const result = await oraclePrivate.completePrivateVerificationFlow({
 - **Advanced incentive mechanisms**: Dynamic reward structures
 - **Cross-chain liquidity pools**: Multi-network liquidity mining
 
-## 🚀 Deployment
-
-### Citrea Testnet (Live)
-
-**✅ Deployed and Verified on Citrea Testnet (Chain ID: 5115):**
-
-**Core Contracts:**
-
-- **TrexToken**: [`0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E`](https://explorer.testnet.citrea.xyz/address/0x94c17DD37ED3Ca85764b35BfD4d1CCc543b1bE3E) ✅ Verified (Sourcify + Blockscout)
-- **LightningOraclePrivate**: [`0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a`](https://explorer.testnet.citrea.xyz/address/0xc36B6BFa0ce8C6bdD8efcCd23CeC2E425768f64a) ✅ Verified (Sourcify + Blockscout)
-- **DeFiContractPrivate**: [`0x90e97EF730B28B14b3F5f9214f47312796b6c10e`](https://explorer.testnet.citrea.xyz/address/0x90e97EF730B28B14b3F5f9214f47312796b6c10e) ✅ Verified (Sourcify + Blockscout)
-
-**Legacy Contracts:**
-
-- **LightningOracle**: [`0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E`](https://explorer.testnet.citrea.xyz/address/0x4a95E7e42c968A6c7BFBBb2F2AA908463B46059E) ✅ Verified (Sourcify + Blockscout)
-- **DeFiContract**: [`0x9d24c52916A14afc31D86B5Aa046b252383ee444`](https://explorer.testnet.citrea.xyz/address/0x9d24c52916A14afc31D86B5Aa046b252383ee444) ✅ Verified (Sourcify + Blockscout)
-
-**Network Details:**
-
-- **RPC URL**: `https://rpc.testnet.citrea.xyz`
-- **Explorer**: `https://explorer.testnet.citrea.xyz`
-
-### Local Development
-
-```bash
-cd trex-contracts
-forge script script/DeployTrexContracts.s.sol --rpc-url anvil --broadcast
-```
 
 ## 📚 Documentation
 
