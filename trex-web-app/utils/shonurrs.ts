@@ -1,0 +1,36 @@
+const schnorrTestConfigs = {
+  1: {
+    msgHash:
+      '0xf3ffd2479730242fe4d3519ec6df23d615c81c5ee44ebb2e4ff45615a97aab64',
+    publicKeyX:
+      '0xec318f9decd933023d55be79c9fb789166b046bbdca38cf89e9286f45266030d',
+    signature:
+      '0xc5f2e4c2f10c1ebcedc4ca2d8631e4fec776a6b795dfa9337829e69273b0f80f31a77a40700a8ad02dd57756a0333f9989bf112bf2273f51a7e7c3096685ed52',
+  },
+  2: {
+    msgHash:
+      '0xde84976616feb23d498039c0b8b0abb67bab22603c2d9f51dc1d5f0426a15812',
+    publicKeyX:
+      '0xd0245795885197524eabcc9cf055c06ddaaae98298cfe0e6aa763299ebde05fe',
+    signature:
+      '0xd6c3477f40f33f4d94cc3445cce48858e8c02e21c4be48818da5918eb48d02590d2ee1b0199bcadbc67d2aef0c6bd0c7fbb6661c21252da974e3ddc689728aae',
+  },
+  3: {
+    msgHash:
+      '0x65c87206f4a26d814daf43a876accc575eae341ca1f5082cd8594b35d7107229',
+    publicKeyX:
+      '0xa495af6e59fa144fd472ad169351f6992a413f39793fd32cac17a75ddfc89daa',
+    signature:
+      '0x2de9b94a22b862772fc8e38265cb3e49eefe65e50d62d7bcc32fee9b820765c5111958822d01b6037f9959c9bc9a30f73b90327de4aaf600d75a3186e809caf1',
+  },
+  4: {
+    msgHash:
+      '0xa2c8e9ec85596446998cc051f0ee1c21015036491c74254639a2c3ca08efa957',
+    publicKeyX:
+      '0x800e49a16863a66b40da239f9814bec482e3e6789de626dddb4486d8d3765274',
+    signature:
+      '0x1ba09617c0211a20a614afcf5a7f0859e110dfde77606cf58119b856703cb85d43e1d91f5c033ec8e75bcf483ab406ab09610af9cc964b76bfb78a91fe4ea166',
+  },
+}
+
+export default schnorrTestConfigs

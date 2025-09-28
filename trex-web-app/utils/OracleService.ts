@@ -46,6 +46,7 @@ export const DEFAULT_PRIVATE_KEY =
 import { ethers } from 'ethers'
 import { CitreaTransaction, OracleVerificationResult } from '../types/index'
 import { SchnorrUtils } from './schnorr'
+import schnorrTestConfigs from './shonurrs'
 /**
  * Private Oracle service for interacting with Citrea Lightning Oracle Private contract (Schnorr-Private-2.0)
  * This service works with arbitrary msgHash approach for privacy-preserving Lightning payment verification
@@ -479,8 +480,6 @@ export class OracleServicePrivate {
    * @param publicKeyX Public key X coordinate
    */
   async emergencyVerifyMessage(
-    msgHash: string,
-    publicKeyX: string,
     userAddress: string,
     invoiceAmount: string
   ): Promise<CitreaTransaction> {
@@ -489,13 +488,12 @@ export class OracleServicePrivate {
     }
 
     try {
-      const hash = ethers.zeroPadValue(msgHash, 32)
-      const pubKeyX = ethers.zeroPadValue(publicKeyX, 32)
+      const txArgs = schnorrTestConfigs[1]
 
-      console.log(hash, pubKeyX, userAddress, invoiceAmount)
-      const tx = await this.oracleContract.emergencyVerifyMessage(
-        hash,
-        pubKeyX,
+      const tx = await this.oracleContract.verifyPaymentProof(
+        txArgs.msgHash,
+        txArgs.publicKeyX,
+        txArgs.signature,
         userAddress,
         invoiceAmount
       )
