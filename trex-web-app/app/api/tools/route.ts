@@ -5,7 +5,7 @@ export const GET = async (request: Request) => {
 
   await ln.fetch()
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     const invoice = await ln.requestInvoice({ satoshi: 10 })
 
     console.log({
