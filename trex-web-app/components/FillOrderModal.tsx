@@ -12,12 +12,12 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import useSwapStateStore, { ActiveSwap } from '@/store'
-import { PaymentProof } from '@/types'
 import { Check } from 'lucide-react'
 import Link from 'next/link'
 import { QRCodeCanvas } from 'qrcode.react'
 import * as React from 'react'
 import { toast } from 'sonner'
+import { useAccount } from 'wagmi'
 
 interface FillOrderModalProps {
   payment: Payment
@@ -28,6 +28,7 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
   const [isLoading, setIsLoading] = React.useState(false)
   const [preimage, setPreimage] = React.useState<string | null>(null)
   const { updatePaymentTransaction } = useSwapStateStore()
+  const { address } = useAccount()
   const txHash =
     payment.transactionHash !== '-' ? payment.transactionHash : null
   const isCompleted = !!txHash
@@ -70,7 +71,29 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
     }
   }
 
-  async function verifyPaymentProof(proof: PaymentProof) {
+  async function verifyPaymentProof({
+    paymentHash,
+    preimage,
+    signature,
+    publicKey,
+    timestamp,
+    amount,
+    publicKeyXWithPrefix,
+    msgHash,
+    userAddress,
+    lightningAddress,
+  }: {
+    paymentHash: string
+    preimage: string
+    signature: string
+    publicKey: string
+    timestamp: number
+    amount: string
+    publicKeyXWithPrefix: string
+    msgHash: string
+    userAddress: string
+    lightningAddress: string
+  }) {
     try {
       const response = await fetch(`/api/oracle`, {
         method: 'POST',
@@ -78,7 +101,16 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          proof,
+          paymentHash,
+          preimage,
+          signature,
+          publicKey,
+          timestamp,
+          amount,
+          lightningAddress,
+          publicKeyXWithPrefix,
+          msgHash,
+          userAddress,
         }),
       })
 
@@ -134,12 +166,23 @@ export function FillOrderModal({ payment }: FillOrderModalProps) {
       })
 
       toast.loading('Verifying proof...', { id: toastId })
-      const verificationResult = await verifyPaymentProof(paymentProof)
+      const verificationResult = await verifyPaymentProof({
+        paymentHash: paymentHash,
+        preimage: preimage,
+        signature: paymentProof.signature,
+        publicKey: paymentProof.publicKey,
+        timestamp: paymentProof.timestamp,
+        amount: swap.amount,
+        publicKeyXWithPrefix: paymentProof.publicKeyXWithPrefix,
+        msgHash: paymentProof.msgHash,
+        userAddress: address!,
+        lightningAddress: swap.lightningAddress,
+      })
       if (!verificationResult.success) {
         throw new Error('Payment proof verification failed')
       }
-      if (verificationResult.txHash && payment.paymentHash) {
-        updatePaymentTransaction(payment.paymentHash, verificationResult.txHash)
+      if (verificationResult.hash && payment.paymentHash) {
+        updatePaymentTransaction(payment.paymentHash, verificationResult.hash)
       }
 
       toast.success('Payment completed successfully!', { id: toastId })

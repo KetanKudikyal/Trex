@@ -73,7 +73,7 @@ export const columns: ColumnDef<Payment>[] = [
   },
   {
     accessorKey: 'transactionHash',
-    header: 'Transaction Hash',
+    header: 'Schnorr Sig Hash',
     cell: ({ row }) => {
       const hash = row.getValue('transactionHash') as string
       return (
